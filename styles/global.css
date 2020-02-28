@@ -1,0 +1,17 @@
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+canvas {
+  height: 256px;
+  width: calc(100vw - 48px);
+  border: 1px solid black;
+}

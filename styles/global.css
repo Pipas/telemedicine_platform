@@ -15,3 +15,9 @@ canvas {
   width: calc(100vw - 48px);
   border: 1px solid black;
 }
+
+#controls {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}

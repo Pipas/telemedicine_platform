@@ -16,7 +16,7 @@ function toggleValues (): void {
       graphManager.addPoint(val)
 
       if (x >= 1) {
-        val += 1
+        val += 10
         x = 0
         console.log('val: ' + val)
       }

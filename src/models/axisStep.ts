@@ -42,8 +42,8 @@ export class AxisStep {
       firstPoint = new Vector3(this.value * this.graph.xZoom, 0, 0)
       secondPoint = new Vector3(this.value * this.graph.xZoom, -0.5, 0)
     } else {
-      firstPoint = new Vector3(0, this.value * this.graph.yZoom, 0)
-      secondPoint = new Vector3(0.5, this.value * this.graph.yZoom, 0)
+      firstPoint = new Vector3(this.graph.visibleRange.minX * this.graph.xZoom, this.value * this.graph.yZoom, 0)
+      secondPoint = new Vector3(this.graph.visibleRange.minX * this.graph.xZoom + 0.5, this.value * this.graph.yZoom, 0)
     }
 
     const geometry = new BufferGeometry().setFromPoints([firstPoint, secondPoint])
@@ -78,10 +78,10 @@ export class AxisStep {
 
     
     if(this.direction === StepDirection.horizontal) {
-      this.text.position.x = this.value * this.graph.xZoom //+ 0.15
+      this.text.position.x = this.value * this.graph.xZoom
       this.text.position.y = -1.4
     } else {
-      this.text.position.x = 0.8
+      this.text.position.x = this.graph.visibleRange.minX * this.graph.xZoom + 1 + (canvas.width / canvas.height) / 2
       this.text.position.y = this.value * this.graph.yZoom
     }
     

@@ -1,5 +1,6 @@
 import { Line, Vector3, BufferGeometry, Scene, Camera } from 'three'
-import { Axis } from './axis'
+import { XAxis } from './xAxis'
+import { YAxis } from './yAxis'
 import { Directions } from '../utils/directions'
 import { Point } from '../models/point'
 import { VisibleRange } from '../models/visibleRange'
@@ -19,7 +20,8 @@ export class Graph {
   visibleRange: VisibleRange
   xZoom: number
   yZoom: number
-  axis: Axis
+  xAxis: XAxis
+  yAxis: YAxis
   lastPoint: Point
   initTime: number
 
@@ -46,7 +48,8 @@ export class Graph {
 
     this.setupCamera()
 
-    this.axis = new Axis(this)
+    this.xAxis = new XAxis(this)
+    this.yAxis = new YAxis(this)
   }
 
   private setupCamera(): void {
@@ -74,7 +77,8 @@ export class Graph {
       this.visibleRange.minX += delta
     }
 
-    this.axis.update()
+    this.xAxis.rebuildSteps()
+    this.yAxis.rebuildSteps()
   }
 
   private checkUpdateVisibleRange(point: Point): void {
@@ -92,6 +96,7 @@ export class Graph {
     this.visibleRange.maxY = newValue
 
     this.redrawVisibleLines()
+    this.yAxis.rebuildSteps()
   }
 
   private redrawVisibleLines(): void {

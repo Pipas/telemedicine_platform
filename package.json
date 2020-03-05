@@ -5,7 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "webpack --mode development",
-    "start": "webpack-dev-server --open",
+    "start": "webpack-dev-server --open 'google-chrome'",
     "pages": "gh-pages -d public",
     "deploy": "run-s build pages"
   },
@@ -25,5 +25,10 @@
   },
   "dependencies": {
     "three": "^0.114.0"
+  },
+  "husky": {
+    "hooks": {
+      "post-commit": "npm run deploy"
+    }
   }
 }

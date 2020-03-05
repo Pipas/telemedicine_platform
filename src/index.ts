@@ -15,12 +15,12 @@ function toggleValues (): void {
       x += 1
       graphManager.addPoint(val)
 
-      if (x > 100) {
-        val += 4
+      if (x >= 1) {
+        val += 1
         x = 0
         console.log('val: ' + val)
       }
-    }, 1)
+    }, 1000)
   }
 }
 

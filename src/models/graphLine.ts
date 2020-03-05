@@ -3,7 +3,7 @@ import { Point } from './point'
 import { Graph } from '../graph/graph'
 
 export class GraphLine {
-  public static material = new LineBasicMaterial({ color: 0x000000 })
+  public static material = new LineBasicMaterial({ color: 0x0000ff })
 
   private graph: Graph
 
@@ -26,7 +26,7 @@ export class GraphLine {
 
   draw(): void {
     const firstPoint = new Vector3(this.startPoint.x * this.graph.xZoom, this.startPoint.y * this.graph.yZoom, 0)
-    const secondPoint = new Vector3(this.endPoint.x * this.graph.xZoom, this.startPoint.y * this.graph.yZoom, 0)
+    const secondPoint = new Vector3(this.endPoint.x * this.graph.xZoom, this.endPoint.y * this.graph.yZoom, 0)
     const geometry = new BufferGeometry().setFromPoints([firstPoint, secondPoint])
 
     this.object = new Line(geometry, GraphLine.material)

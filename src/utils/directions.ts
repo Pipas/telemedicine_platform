@@ -1,4 +1,4 @@
-export enum directions {
+export enum Directions {
   UP,
   DOWN,
   LEFT,

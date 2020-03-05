@@ -1,5 +1,6 @@
-import { Line, Vector3, LineBasicMaterial, BufferGeometry } from 'three'
+import { Line, Vector3, LineBasicMaterial, BufferGeometry, Texture, Sprite, SpriteMaterial } from 'three'
 import { Graph } from '../graph/graph'
+import { AxisStep, StepDirection } from '../models/axisStep'
 
 export class Axis {
   
@@ -14,8 +15,12 @@ export class Axis {
   // Last drawn indicator
   private lastDrawnStep = 0
 
+  private steps: AxisStep[]
+
   constructor(graph: Graph) {
     this.graph = graph
+    this.steps = []
+
     this.buildAxis()
     this.buildSteps()
   }
@@ -25,23 +30,20 @@ export class Axis {
   }
 
   private buildAxis(): void {
-    this.addLine([new Vector3(-100000, 0, 0), new Vector3(100000, 0, 0)])
+    let geometry = new BufferGeometry().setFromPoints([new Vector3(-100000, 0, 0), new Vector3(100000, 0, 0)])
+    let line = new Line(geometry, Axis.material)
+
+    this.graph.scene.add(line)
+
+    geometry = new BufferGeometry().setFromPoints([new Vector3(0, -100000, 0), new Vector3(0, 100000, 0)])
+    line = new Line(geometry, Axis.material)
+
+    this.graph.scene.add(line)
   }
 
   private buildSteps(): void {
     for (this.lastDrawnStep; this.lastDrawnStep < this.graph.visibleRange.maxX; this.lastDrawnStep += this.stepSize) {
-      this.addStep(this.lastDrawnStep)
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, this.lastDrawnStep))
     }
-  }
-
-  addStep(x: number): void {
-    this.addLine([new Vector3(x * this.graph.xZoom, 0, 0), new Vector3(x * this.graph.xZoom, -0.5, 0)])
-  }
-
-  addLine (points: Vector3[]): void {
-    const geometry = new BufferGeometry().setFromPoints(points)
-    const line = new Line(geometry, Axis.material)
-
-    this.graph.scene.add(line)
   }
 }

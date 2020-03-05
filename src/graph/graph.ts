@@ -1,6 +1,6 @@
 import { Line, Vector3, BufferGeometry, Scene, Camera } from 'three'
 import { Axis } from './axis'
-import { directions } from '../utils/directions'
+import { Directions } from '../utils/directions'
 import { Point } from '../models/point'
 import { VisibleRange } from '../models/visibleRange'
 import { GraphLine } from '../models/graphLine'
@@ -63,8 +63,8 @@ export class Graph {
     )
   }
 
-  private moveCamera(direction: directions, delta: number): void {
-    if (direction === directions.LEFT) {
+  private moveCamera(direction: Directions, delta: number): void {
+    if (direction === Directions.LEFT) {
       this.camera.position.x -= delta * this.xZoom
       this.visibleRange.maxX -= delta
       this.visibleRange.minX -= delta
@@ -79,7 +79,7 @@ export class Graph {
 
   private checkUpdateVisibleRange(point: Point): void {
     if (point.x > this.visibleRange.maxX) {
-      this.moveCamera(directions.RIGHT, point.x - this.visibleRange.maxX)
+      this.moveCamera(Directions.RIGHT, point.x - this.visibleRange.maxX)
     }
     if (point.y > this.visibleRange.maxY || point.y < this.visibleRange.minY) {
       this.updateVerticalScale(point.y)

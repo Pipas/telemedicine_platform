@@ -76,27 +76,25 @@ export class Graph {
       this.visibleRange.maxX += delta
       this.visibleRange.minX += delta
     }
-
-    this.xAxis.rebuildSteps()
-    this.yAxis.rebuildSteps()
   }
 
   private checkUpdateVisibleRange(point: Point): void {
     if (point.x > this.visibleRange.maxX) {
       this.moveCamera(Directions.RIGHT, point.x - this.visibleRange.maxX)
+      this.xAxis.rebuildSteps()
     }
     if (point.y > this.visibleRange.maxY || point.y < this.visibleRange.minY) {
       this.updateVerticalScale(point.y)
+      this.yAxis.rebuildSteps()
     }
   }
 
   private updateVerticalScale(newValue: number): void {
     this.yZoom = this.cameraDistance * (1 - this.percentagePadding) / Math.abs(newValue)
-    this.visibleRange.minY = -newValue
-    this.visibleRange.maxY = newValue
+    this.visibleRange.minY = -Math.abs(newValue)
+    this.visibleRange.maxY = Math.abs(newValue)
 
     this.redrawVisibleLines()
-    this.yAxis.rebuildSteps()
   }
 
   private redrawVisibleLines(): void {

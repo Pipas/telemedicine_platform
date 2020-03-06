@@ -1,26 +1,16 @@
 import { GraphManager } from './graphManager'
+import { ValueGenerator } from './generator/valueGenerator'
+import { SineGenerator } from './generator/sineGenerator'
 
-let interval: NodeJS.Timeout
 let graphManager: GraphManager
 
-let x = 0
-let val = 0
+let generator: ValueGenerator = new SineGenerator(10, val => graphManager.addPoint(val), 10)
 
 function toggleValues (): void {
-  if (interval) {
-    clearInterval(interval)
-    interval = null
+  if(generator.isGenerating()) {
+    generator.stop()
   } else {
-    interval = setInterval(() => {
-      x += 1
-      graphManager.addPoint(val)
-
-      if (x >= 1) {
-        val += 10
-        x = 0
-        console.log('val: ' + val)
-      }
-    }, 1000)
+    generator.start()
   }
 }
 

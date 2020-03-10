@@ -11,8 +11,8 @@ body {
 }
 
 canvas {
-  height: 256px;
-  width: calc(100vw - 48px);
+  /* height: 256px;
+  width: calc(100vw - 48px); */
   border: 1px solid black;
 }
 

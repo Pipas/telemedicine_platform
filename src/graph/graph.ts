@@ -23,9 +23,10 @@ export class Graph {
   xAxis: XAxis
   yAxis: YAxis
   lastPoint: Point
-  initTime: number
 
   lines: GraphLine[]
+
+  pointBuffer: Point[]
 
 
   constructor(scene: Scene, camera: Camera, aspectRatio: number) {
@@ -39,13 +40,12 @@ export class Graph {
     this.lastPoint = new Point(0,0)
 
     this.lines = []
+    this.pointBuffer = []
 
     this.setupCamera()
   }
 
   init(): void {
-    this.initTime = (new Date()).getTime()
-
     this.setupCamera()
 
     this.xAxis = new XAxis(this)
@@ -80,8 +80,10 @@ export class Graph {
 
   private checkUpdateVisibleRange(point: Point): void {
     if (point.x > this.visibleRange.maxX) {
-      this.moveCamera(Directions.RIGHT, point.x - this.visibleRange.maxX)
+      const delta = point.x - this.visibleRange.maxX
+      this.moveCamera(Directions.RIGHT, delta)
       this.xAxis.rebuildSteps()
+      this.yAxis.moveSteps(delta)
     }
     if (point.y > this.visibleRange.maxY || point.y < this.visibleRange.minY) {
       this.updateVerticalScale(point.y)
@@ -111,19 +113,24 @@ export class Graph {
     this.cameraFollow = !this.cameraFollow
   }
 
-  addPoint(value: number): void {
-    const currentTime = (new Date()).getTime()
+  addPoint(point: Point): void {
+    this.pointBuffer.push(point)
+  }
 
-    const newPoint = new Point((currentTime - this.initTime) / 1000, value)
+  update(): void {
+    if(this.pointBuffer.length === 0) return
 
-    this.lines.push(new GraphLine(this, this.lastPoint, newPoint))
+    this.pointBuffer.forEach(point => {
+      this.lines.push(new GraphLine(this, this.lastPoint, point))
+      this.lastPoint = point
+    })
 
-    this.lastPoint = newPoint
+    this.pointBuffer = []
 
     if (this.lines.length > 2500) {
-      this.lines.shift().remove()
+      this.lines = this.lines.splice(-2500)
     }
 
-    this.checkUpdateVisibleRange(newPoint)
+    this.checkUpdateVisibleRange(this.lastPoint)
   }
 }

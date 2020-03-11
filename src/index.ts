@@ -4,7 +4,9 @@ import { SineGenerator } from './generator/sineGenerator'
 
 let graphManager: GraphManager
 
-let generator: ValueGenerator = new SineGenerator(10, val => graphManager.addPoint(val), 10)
+let generator: ValueGenerator = new SineGenerator(60, point => {
+  graphManager.addPoint(point)
+}, 10)
 
 function toggleValues (): void {
   if(generator.isGenerating()) {
@@ -26,8 +28,8 @@ function bindEventListeners (): void {
 }
 
 function render (): void {
-  requestAnimationFrame(render)
   graphManager.update()
+  requestAnimationFrame(render)
 }
 
 

@@ -1,5 +1,6 @@
 import { Scene, Color, WebGLRenderer, PerspectiveCamera } from 'three'
 import { Graph } from './graph/graph'
+import { Point } from './models/point'
 
 type ScreenDimentions = { width: number; height: number }
 
@@ -50,8 +51,8 @@ export class GraphManager {
     this.camera = new PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane)
   }
 
-  addPoint(value: number): void {
-    this.graph.addPoint(value)
+  addPoint(point: Point): void {
+    this.graph.addPoint(point)
   }
 
   initGraph(): void {
@@ -59,6 +60,7 @@ export class GraphManager {
   }
 
   update(): void {
+    this.graph.update()
     this.renderer.render(this.scene, this.camera)
   }
 

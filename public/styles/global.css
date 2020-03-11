@@ -20,4 +20,8 @@ canvas {
   position: absolute;
   top: 20px;
   left: 20px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
 }

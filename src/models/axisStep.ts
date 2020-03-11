@@ -1,5 +1,6 @@
-import { LineBasicMaterial, Vector3, Line, BufferGeometry, Sprite, Texture, SpriteMaterial, LinearFilter } from 'three'
+import { LineBasicMaterial, Vector3, Line, BufferGeometry, Sprite, Texture, SpriteMaterial, LinearFilter, Group } from 'three'
 import { Graph } from '../graph/graph'
+import { Axis } from '../graph/axis'
 
 export enum StepDirection {
   vertical,
@@ -8,20 +9,24 @@ export enum StepDirection {
 
 export class AxisStep {
   public static material = new LineBasicMaterial({ color: 0x000000 })
+  private static digits: Map<string, Sprite>
+  private static digitWidth: number
   private static fontSize = 15
 
   private graph: Graph
   private direction: StepDirection
 
   public value: number
-  public object: Line
-  public text: Sprite
+  public group: Group
 
   constructor(graph: Graph, direction: StepDirection, value: number ) {
     this.graph = graph
     this.direction = direction
     this.value = value
 
+    this.group = new Group()
+
+    this.initDigits()
     this.draw()
   }
 
@@ -32,6 +37,8 @@ export class AxisStep {
   draw(): void {
     this.drawLine()
     this.drawNumber()
+
+    this.graph.scene.add(this.group)
   }
 
   private drawLine(): void {
@@ -48,50 +55,70 @@ export class AxisStep {
 
     const geometry = new BufferGeometry().setFromPoints([firstPoint, secondPoint])
 
-    this.object = new Line(geometry, AxisStep.material)
+    const line = new Line(geometry, AxisStep.material)
 
-    this.graph.scene.add(this.object)
+    this.group.add(line)
+  }
+
+  private initDigits(): void {
+    if(AxisStep.digits == null) {
+      const digits = '-0123456789'
+
+      const canvas = document.createElement('canvas') as HTMLCanvasElement
+      const canvasContext = canvas.getContext('2d')
+      canvasContext.font = `${AxisStep.fontSize}px 'monospace'`
+      canvasContext.fillStyle = 'black'
+
+      // Read canvas size with correct font
+      canvas.width = canvasContext.measureText(digits).width
+      canvas.height = AxisStep.fontSize
+
+      // Set font again because it's reset from reading
+      canvasContext.font = `${AxisStep.fontSize}px 'monospace'`
+
+      canvasContext.fillText(digits, 0, AxisStep.fontSize)
+
+      // canvas contents will be used for a texture
+      AxisStep.digits = new Map<string, Sprite>()
+      AxisStep.digitWidth = (canvas.width / digits.length) / AxisStep.fontSize
+
+      for (let i = 0; i < digits.length; i++) {
+        const texture = new Texture(canvas) 
+        texture.minFilter = LinearFilter
+
+        texture.needsUpdate = true
+
+        texture.repeat.x = 1 / digits.length
+
+        texture.offset.x = i * (canvas.width / digits.length) / canvas.width 
+    
+        const sprite = new Sprite( new SpriteMaterial( { map: texture }))
+        sprite.scale.set(AxisStep.digitWidth, 1, 1)
+        
+        AxisStep.digits.set(digits.split('')[i], sprite)
+      }
+    }
   }
 
   private drawNumber(): void {
-    const canvas = document.createElement('canvas')
-    const canvasContext = canvas.getContext('2d')
-    canvasContext.font = `${AxisStep.fontSize}px Arial`
-    canvasContext.fillStyle = 'black'
+    const valueDigits = this.value.toString().split("")
 
-    // Read canvas size with correct font
-    canvas.width = canvasContext.measureText(this.value.toString()).width
-    canvas.height = AxisStep.fontSize
+    valueDigits.forEach((digit, i) => {
+      const spriteDigit = AxisStep.digits.get(digit).clone()
+      if(this.direction === StepDirection.horizontal) {
+        spriteDigit.position.x = this.value * this.graph.xZoom - (AxisStep.digitWidth * (valueDigits.length - 1) / 2) + AxisStep.digitWidth * i
+        spriteDigit.position.y = -1.4
+      } else {
+        spriteDigit.position.x = this.graph.visibleRange.minX * this.graph.xZoom + 1 + (AxisStep.digitWidth * (valueDigits.length - 1) / 2) + AxisStep.digitWidth * i
+        spriteDigit.position.y = this.value * this.graph.yZoom
+      }
 
-    // Set font again because it's reset from reading
-    canvasContext.font = `${AxisStep.fontSize}px Arial`
-
-    canvasContext.fillText(this.value.toString(), 0, AxisStep.fontSize)
-
-    // canvas contents will be used for a texture
-    const texture = new Texture(canvas) 
-    texture.minFilter = LinearFilter
-
-    texture.needsUpdate = true
-
-    this.text = new Sprite( new SpriteMaterial( { map: texture }))
-
-    
-    if(this.direction === StepDirection.horizontal) {
-      this.text.position.x = this.value * this.graph.xZoom
-      this.text.position.y = -1.4
-    } else {
-      this.text.position.x = this.graph.visibleRange.minX * this.graph.xZoom + 1 + (canvas.width / canvas.height) / 2
-      this.text.position.y = this.value * this.graph.yZoom
-    }
-    
-    this.text.scale.set((canvas.width / canvas.height), 1, 1)
-    this.graph.scene.add(this.text)
+      this.group.add(spriteDigit)
+    })
   }
 
   remove(): void {
-    this.graph.scene.remove(this.object)
-    this.graph.scene.remove(this.text)
+    this.graph.scene.remove(this.group)
   }
 
   redraw(): void {

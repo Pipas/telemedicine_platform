@@ -23,6 +23,12 @@ export class YAxis extends Axis {
     this.buildSteps()
   }
 
+  moveSteps(delta: number): void {
+    this.steps.forEach(step => {
+      step.group.position.x += delta * this.graph.xZoom
+    });
+  }
+
   private calculateNewStep(): void {
     let newStepSize
     let magnitude = Math.pow(10, Math.floor(Math.log(this.graph.visibleRange.maxY * 2/3) / Math.LN10))

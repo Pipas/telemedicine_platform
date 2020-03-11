@@ -1,10 +1,13 @@
+import { Point } from "../models/point"
+
 export class ValueGenerator {
   protected generating: boolean
   protected frequency: number
-  protected callback: (val: number) => void
+  protected callback: (point: Point) => void
+  protected initTime: number
   private interval: NodeJS.Timeout
 
-  constructor(frequency: number, callback: (val: number) => void) {
+  constructor(frequency: number, callback: (point: Point) => void) {
     this.generating = false
     this.frequency = frequency
     this.callback = callback
@@ -20,6 +23,7 @@ export class ValueGenerator {
   }
 
   start(): void {
+    this.initTime = Date.now()
     this.interval = setInterval(() => {
       this.callback(this.generate())
     }, 1000 / this.frequency)
@@ -31,7 +35,7 @@ export class ValueGenerator {
     this.generating = false
   }
 
-  generate(): number {
-    return 1
+  generate(): Point {
+    return null
   }
 }

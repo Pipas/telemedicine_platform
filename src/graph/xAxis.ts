@@ -5,6 +5,8 @@ import { Axis } from './axis'
 
 export class XAxis extends Axis {
 
+  private lastStep: number
+
   constructor(graph: Graph) {
     super(graph)
 
@@ -13,8 +15,14 @@ export class XAxis extends Axis {
   }
 
   rebuildSteps(): void {
-    this.steps.forEach(step => step.remove())
-    this.buildSteps()
+    if(this.graph.visibleRange.maxX > this.lastStep + this.stepSize) {
+      this.lastStep += this.stepSize
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, this.lastStep))
+    }
+
+    if(this.graph.visibleRange.minX > this.steps[0].value) {
+      this.steps.shift().remove()
+    }
   }
 
   private buildAxis(): void {
@@ -25,10 +33,12 @@ export class XAxis extends Axis {
   }
 
   private buildSteps(): void {
-    let firstStep = Math.floor(this.graph.visibleRange.minX) - Math.floor(this.graph.visibleRange.maxX) % this.stepSize
+    this.lastStep = Math.ceil(this.graph.visibleRange.minX) - Math.ceil(this.graph.visibleRange.maxX) % this.stepSize
 
-    for (firstStep; firstStep < this.graph.visibleRange.maxX; firstStep += this.stepSize) {
-      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, firstStep))
+    
+    for (this.lastStep; this.lastStep < this.graph.visibleRange.maxX; this.lastStep += this.stepSize) {
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, this.lastStep))
     }
+    this.lastStep--
   }
 }

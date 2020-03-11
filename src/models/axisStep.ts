@@ -1,6 +1,5 @@
 import { LineBasicMaterial, Vector3, Line, BufferGeometry, Sprite, Texture, SpriteMaterial, LinearFilter, Group } from 'three'
 import { Graph } from '../graph/graph'
-import { Axis } from '../graph/axis'
 
 export enum StepDirection {
   vertical,
@@ -38,6 +37,7 @@ export class AxisStep {
     this.drawLine()
     this.drawNumber()
 
+    this.position()
     this.graph.scene.add(this.group)
   }
 
@@ -46,11 +46,11 @@ export class AxisStep {
     let secondPoint: Vector3
 
     if(this.direction === StepDirection.horizontal) {
-      firstPoint = new Vector3(this.value * this.graph.xZoom, 0, 0)
-      secondPoint = new Vector3(this.value * this.graph.xZoom, -0.5, 0)
+      firstPoint = new Vector3(0, 0, 0)
+      secondPoint = new Vector3(0, -0.5, 0)
     } else {
-      firstPoint = new Vector3(this.graph.visibleRange.minX * this.graph.xZoom, this.value * this.graph.yZoom, 0)
-      secondPoint = new Vector3(this.graph.visibleRange.minX * this.graph.xZoom + 0.5, this.value * this.graph.yZoom, 0)
+      firstPoint = new Vector3(0, 0, 0)
+      secondPoint = new Vector3(0.5, 0, 0)
     }
 
     const geometry = new BufferGeometry().setFromPoints([firstPoint, secondPoint])
@@ -106,15 +106,25 @@ export class AxisStep {
     valueDigits.forEach((digit, i) => {
       const spriteDigit = AxisStep.digits.get(digit).clone()
       if(this.direction === StepDirection.horizontal) {
-        spriteDigit.position.x = this.value * this.graph.xZoom - (AxisStep.digitWidth * (valueDigits.length - 1) / 2) + AxisStep.digitWidth * i
+        spriteDigit.position.x = - (AxisStep.digitWidth * (valueDigits.length - 1) / 2) + AxisStep.digitWidth * i
         spriteDigit.position.y = -1.4
       } else {
-        spriteDigit.position.x = this.graph.visibleRange.minX * this.graph.xZoom + 1 + (AxisStep.digitWidth * (valueDigits.length - 1) / 2) + AxisStep.digitWidth * i
-        spriteDigit.position.y = this.value * this.graph.yZoom
+        spriteDigit.position.x = 1 + (AxisStep.digitWidth * (valueDigits.length - 1) / 2) + AxisStep.digitWidth * i
+        spriteDigit.position.y = 0
       }
 
       this.group.add(spriteDigit)
     })
+  }
+
+  position(): void {
+    if(this.direction == StepDirection.horizontal) {
+      this.group.position.x = this.value * this.graph.xZoom
+      this.group.position.y = 0
+    } else {
+      this.group.position.x = this.graph.visibleRange.minX * this.graph.xZoom
+      this.group.position.y = this.value * this.graph.yZoom
+    }
   }
 
   remove(): void {

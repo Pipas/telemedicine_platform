@@ -1,4 +1,4 @@
-import { Line, Vector3, LineBasicMaterial, BufferGeometry, Texture, Sprite, SpriteMaterial } from 'three'
+import { Line, Vector3, BufferGeometry } from 'three'
 import { Graph } from '../graph/graph'
 import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
@@ -16,11 +16,15 @@ export class YAxis extends Axis {
   }
 
   rebuildSteps(): void {
-    this.steps.forEach(step => step.remove())
-
-    this.calculateNewStep()
-
-    this.buildSteps()
+    if(this.calculateNewStep()) {
+      this.steps.forEach(step => step.remove())
+      this.buildSteps()
+    }
+    else {
+      this.steps.forEach(step => {
+        step.position()
+      })
+    }
   }
 
   moveSteps(delta: number): void {
@@ -29,7 +33,7 @@ export class YAxis extends Axis {
     });
   }
 
-  private calculateNewStep(): void {
+  private calculateNewStep(): boolean {
     let newStepSize
     let magnitude = Math.pow(10, Math.floor(Math.log(this.graph.visibleRange.maxY * 2/3) / Math.LN10))
 
@@ -39,6 +43,8 @@ export class YAxis extends Axis {
     });
 
     this.stepSize = newStepSize
+
+    return this.stepSize != newStepSize
   }
 
   private buildAxis(): void {

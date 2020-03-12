@@ -1,4 +1,4 @@
-import { Line, Vector3, BufferGeometry, Scene, Camera } from 'three'
+import { Line, Vector3, BufferGeometry, Scene, Camera, Group } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
 import { Directions } from '../utils/directions'
@@ -24,7 +24,7 @@ export class Graph {
   yAxis: YAxis
   lastPoint: Point
 
-  lines: GraphLine[]
+  plotLine: Group
 
   pointBuffer: Point[]
 
@@ -39,10 +39,10 @@ export class Graph {
 
     this.lastPoint = new Point(0,0)
 
-    this.lines = []
     this.pointBuffer = []
 
     this.setupCamera()
+    this.setupPlotLine()
   }
 
   init(): void {
@@ -50,6 +50,13 @@ export class Graph {
 
     this.xAxis = new XAxis(this)
     this.yAxis = new YAxis(this)
+  }
+
+  private setupPlotLine(): void {
+    this.plotLine = new Group()
+    this.plotLine.scale.x = this.xZoom
+    this.plotLine.scale.y = this.yZoom
+    this.scene.add(this.plotLine)
   }
 
   private setupCamera(): void {
@@ -96,17 +103,7 @@ export class Graph {
     this.visibleRange.minY = -Math.abs(newValue)
     this.visibleRange.maxY = Math.abs(newValue)
 
-    this.redrawVisibleLines()
-  }
-
-  private redrawVisibleLines(): void {
-    for (let i = 1; i < this.lines.length; i++) {
-      const line = this.lines[i]
-      if(line.isVisible())
-        line.redraw()
-      else
-        line.remove()
-    }
+    this.plotLine.scale.y = this.yZoom
   }
 
   toggleCameraFollow(): void {
@@ -121,15 +118,19 @@ export class Graph {
     if(this.pointBuffer.length === 0) return
 
     this.pointBuffer.forEach(point => {
-      this.lines.push(new GraphLine(this, this.lastPoint, point))
+      const line = GraphLine.create(this.lastPoint, point)
       this.lastPoint = point
+      this.plotLine.add(line)
     })
 
     this.pointBuffer = []
 
-    if (this.lines.length > 2500) {
-      this.lines = this.lines.splice(-2500)
+
+    for (let i = 0; this.plotLine.children.length > 2000; i++) {
+      this.plotLine.remove(this.plotLine.children[i])
     }
+
+
 
     this.checkUpdateVisibleRange(this.lastPoint)
   }

@@ -4,7 +4,7 @@ import { SineGenerator } from './generator/sineGenerator'
 
 let graphManager: GraphManager
 
-let generator: ValueGenerator = new SineGenerator(60, point => {
+let generator: ValueGenerator = new SineGenerator(1000, point => {
   graphManager.addPoint(point)
 }, 10)
 

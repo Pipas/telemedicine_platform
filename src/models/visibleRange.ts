@@ -1,4 +1,4 @@
-import { Point } from "./point"
+import { Point } from './point'
 
 export class VisibleRange {
   minX: number
@@ -14,14 +14,14 @@ export class VisibleRange {
   }
 
   contains(point: Point): boolean {
-    return (this.minX <= point.x && this.maxX >= point.x && this.minY <= point.y && this.maxY >= point.y)
+    return this.minX <= point.x && this.maxX >= point.x && this.minY <= point.y && this.maxY >= point.y
   }
 
   containsX(x: number): boolean {
-    return (this.minX <= x && this.maxX >= x)
+    return this.minX <= x && this.maxX >= x
   }
 
   containsY(y: number): boolean {
-    return (this.minY <= y && this.maxY >= y)
+    return this.minY <= y && this.maxY >= y
   }
 }

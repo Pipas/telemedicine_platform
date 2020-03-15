@@ -5,7 +5,6 @@ import { Point } from './models/point'
 type ScreenDimentions = { width: number; height: number }
 
 export class GraphManager {
-
   private canvas: HTMLCanvasElement
 
   private scene: Scene
@@ -20,7 +19,7 @@ export class GraphManager {
 
     this.screenDimensions = {
       width: canvas.offsetWidth,
-      height: canvas.offsetHeight
+      height: canvas.offsetHeight,
     }
 
     this.buildScene()
@@ -30,20 +29,19 @@ export class GraphManager {
     this.graph = new Graph(this.scene, this.camera, this.screenDimensions.width / this.screenDimensions.height)
   }
 
-
-  private buildScene (): void {
+  private buildScene(): void {
     this.scene = new Scene()
     this.scene.background = new Color('#fff')
   }
 
-  private buildRender (): void {
+  private buildRender(): void {
     this.renderer = new WebGLRenderer({ canvas: this.canvas })
     // const DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1
     // renderer.setPixelRatio(DPR)
     this.renderer.setSize(this.screenDimensions.width, this.screenDimensions.height)
   }
 
-  private buildCamera (): void {
+  private buildCamera(): void {
     const aspectRatio = this.screenDimensions.width / this.screenDimensions.height
     const fieldOfView = 90
     const nearPlane = 1
@@ -66,13 +64,10 @@ export class GraphManager {
 
   onWindowResize(): void {
     // const { offsetWidth, offsetHeight } = canvas
-
     // screenDimensions.width = offsetWidth
     // screenDimensions.height = offsetHeight
-
     // camera.aspect = offsetWidth / offsetHeight
     // camera.updateProjectionMatrix()
-
     // renderer.setSize(offsetWidth, offsetHeight)
   }
 }

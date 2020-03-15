@@ -1,4 +1,4 @@
-import { Line, Vector3, BufferGeometry, Scene, Camera, Group } from 'three'
+import { Scene, Camera, Group } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
 import { Directions } from '../utils/directions'
@@ -7,7 +7,6 @@ import { VisibleRange } from '../models/visibleRange'
 import { GraphLine } from '../models/graphLine'
 
 export class Graph {
-
   private cameraDistance = 10
   private percentagePadding = 0.1
 
@@ -28,7 +27,6 @@ export class Graph {
 
   pointBuffer: Point[]
 
-
   constructor(scene: Scene, camera: Camera, aspectRatio: number) {
     this.scene = scene
     this.camera = camera
@@ -37,7 +35,7 @@ export class Graph {
     this.xZoom = 10
     this.yZoom = 1
 
-    this.lastPoint = new Point(0,0)
+    this.lastPoint = new Point(0, 0)
 
     this.pointBuffer = []
 
@@ -67,9 +65,9 @@ export class Graph {
 
     this.visibleRange = new VisibleRange(
       0,
-      this.cameraDistance * this.aspectRatio * 2 / this.xZoom,
+      (this.cameraDistance * this.aspectRatio * 2) / this.xZoom,
       -this.cameraDistance * (1 - this.percentagePadding),
-      this.cameraDistance * (1 - this.percentagePadding)
+      this.cameraDistance * (1 - this.percentagePadding),
     )
   }
 
@@ -99,7 +97,7 @@ export class Graph {
   }
 
   private updateVerticalScale(newValue: number): void {
-    this.yZoom = this.cameraDistance * (1 - this.percentagePadding) / Math.abs(newValue)
+    this.yZoom = (this.cameraDistance * (1 - this.percentagePadding)) / Math.abs(newValue)
     this.visibleRange.minY = -Math.abs(newValue)
     this.visibleRange.maxY = Math.abs(newValue)
 
@@ -115,7 +113,7 @@ export class Graph {
   }
 
   update(): void {
-    if(this.pointBuffer.length === 0) return
+    if (this.pointBuffer.length === 0) return
 
     this.pointBuffer.forEach(point => {
       const line = GraphLine.create(this.lastPoint, point)
@@ -125,12 +123,9 @@ export class Graph {
 
     this.pointBuffer = []
 
-
     for (let i = 0; this.plotLine.children.length > 2000; i++) {
       this.plotLine.remove(this.plotLine.children[i])
     }
-
-
 
     this.checkUpdateVisibleRange(this.lastPoint)
   }

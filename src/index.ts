@@ -6,45 +6,46 @@ import { Point } from './models/point'
 let graphManager: GraphManager
 let generator: ValueGenerator
 
-function resizeCanvas (): void {
+function resizeCanvas(): void {
   graphManager.onWindowResize()
 }
 
-function bindEventListeners (): void {
+function bindEventListeners(): void {
   window.onresize = resizeCanvas
 
   resizeCanvas()
 }
 
-function render (): void {
+function render(): void {
   graphManager.update()
   requestAnimationFrame(render)
 }
 
 function initGUI(): void {
   const gui = new dat.GUI()
-  gui.add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator]).onChange(_ => generator.updateGeneratingFunction())
-  gui.add(generator, 'frequency', 1, 1000).onChange(_ => generator.start())
+  gui
+    .add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator])
+    .onChange(() => generator.updateGeneratingFunction())
+  gui.add(generator, 'frequency', 1, 1000).onChange(() => generator.start())
   gui.add(generator, 'maxValue')
   gui.add(generator, 'period')
   gui.add(generator, 'multiplier')
   gui.add(generator, 'toggle')
 }
 
-const generatorCallback = (point: Point) => graphManager.addPoint(point)
+const generatorCallback = (point: Point): void => graphManager.addPoint(point)
 
-window.onload = function (): void {
+window.onload = function(): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
 
   graphManager = new GraphManager(canvas)
 
   bindEventListeners()
-  render()
-
   graphManager.initGraph()
-  
-  generator = new ValueGenerator(point => graphManager.addPoint(point))
+
+  generator = new ValueGenerator(generatorCallback)
   generator.start()
-  
+
   initGUI()
+  render()
 }

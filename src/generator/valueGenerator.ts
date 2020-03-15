@@ -1,8 +1,8 @@
-import { Point } from "../models/point"
+import { Point } from '../models/point'
 
 export enum GeneratorType {
   SineGenerator = 'SineGenerator',
-  SquareGenerator = 'SquareGenerator'
+  SquareGenerator = 'SquareGenerator',
 }
 
 export class ValueGenerator {
@@ -34,8 +34,8 @@ export class ValueGenerator {
   }
 
   start(): void {
-    if(this.initTime == null) this.initTime = Date.now()
-    if(this.interval != null) clearInterval(this.interval)
+    if (this.initTime == null) this.initTime = Date.now()
+    if (this.interval != null) clearInterval(this.interval)
 
     this.interval = setInterval(() => {
       this.callback(this.generate())
@@ -49,33 +49,34 @@ export class ValueGenerator {
   }
 
   toggle(): void {
-    if(this.generating) {
+    if (this.generating) {
       this.stop()
     } else {
       this.start()
     }
   }
 
-  updateGeneratingFunction() {
+  updateGeneratingFunction(): void {
     switch (this.type) {
       case GeneratorType.SineGenerator:
-        this.generatingFunction = () => {
+        this.generatingFunction = (): Point => {
           const time = (Date.now() - this.initTime) / 1000
-          const value = (Math.sin(Math.PI * time/ this.period)) * this.maxValue * this.multiplier
-
-          return new Point(time, value )
-        }
-        break;
-      case GeneratorType.SquareGenerator:
-        this.generatingFunction = () => {
-          const time = (Date.now() - this.initTime) / 1000
-          const value = Math.floor(time / this.period) % 2 ? -this.maxValue * this.multiplier : this.maxValue * this.multiplier
+          const value = Math.sin((Math.PI * time) / this.period) * this.maxValue * this.multiplier
 
           return new Point(time, value)
         }
-        break;
+        break
+      case GeneratorType.SquareGenerator:
+        this.generatingFunction = (): Point => {
+          const time = (Date.now() - this.initTime) / 1000
+          const value =
+            Math.floor(time / this.period) % 2 ? -this.maxValue * this.multiplier : this.maxValue * this.multiplier
+
+          return new Point(time, value)
+        }
+        break
       default:
-        break;
+        break
     }
   }
 

@@ -1,20 +1,10 @@
 import { GraphManager } from './graphManager'
-import { ValueGenerator } from './generator/valueGenerator'
-import { SineGenerator } from './generator/sineGenerator'
+import { ValueGenerator, GeneratorType } from './generator/valueGenerator'
+import * as dat from 'dat.gui'
+import { Point } from './models/point'
 
 let graphManager: GraphManager
-
-let generator: ValueGenerator = new SineGenerator(1000, point => {
-  graphManager.addPoint(point)
-}, 10)
-
-function toggleValues (): void {
-  if(generator.isGenerating()) {
-    generator.stop()
-  } else {
-    generator.start()
-  }
-}
+let generator: ValueGenerator
 
 function resizeCanvas (): void {
   graphManager.onWindowResize()
@@ -23,7 +13,6 @@ function resizeCanvas (): void {
 function bindEventListeners (): void {
   window.onresize = resizeCanvas
 
-  document.getElementById('toggle').addEventListener('click', toggleValues)
   resizeCanvas()
 }
 
@@ -32,6 +21,17 @@ function render (): void {
   requestAnimationFrame(render)
 }
 
+function initGUI(): void {
+  const gui = new dat.GUI()
+  gui.add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator]).onChange(_ => generator.updateGeneratingFunction())
+  gui.add(generator, 'frequency', 1, 1000).onChange(_ => generator.start())
+  gui.add(generator, 'maxValue')
+  gui.add(generator, 'period')
+  gui.add(generator, 'multiplier')
+  gui.add(generator, 'toggle')
+}
+
+const generatorCallback = (point: Point) => graphManager.addPoint(point)
 
 window.onload = function (): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
@@ -42,5 +42,9 @@ window.onload = function (): void {
   render()
 
   graphManager.initGraph()
-  toggleValues()
+  
+  generator = new ValueGenerator(point => graphManager.addPoint(point))
+  generator.start()
+  
+  initGUI()
 }

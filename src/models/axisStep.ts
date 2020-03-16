@@ -74,7 +74,7 @@ export class AxisStep {
 
   private initDigits(): void {
     if (AxisStep.digits == null) {
-      const digits = '-0123456789'
+      const digits = '-0123456789.'
 
       const canvas = document.createElement('canvas') as HTMLCanvasElement
       const canvasContext = canvas.getContext('2d')

@@ -24,7 +24,7 @@ function render(): void {
 function initGUI(): void {
   const gui = new dat.GUI()
   gui
-    .add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator])
+    .add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator, GeneratorType.LinearGenerator])
     .onChange(() => generator.updateGeneratingFunction())
   gui.add(generator, 'frequency', 1, 1000).onChange(() => generator.start())
   gui.add(generator, 'period')

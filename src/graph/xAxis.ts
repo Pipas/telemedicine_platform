@@ -1,4 +1,4 @@
-import { Line, Vector3, LineBasicMaterial, BufferGeometry, Texture, Sprite, SpriteMaterial } from 'three'
+import { Line, Vector3, BufferGeometry } from 'three'
 import { Graph } from '../graph/graph'
 import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'

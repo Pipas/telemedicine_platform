@@ -3,6 +3,7 @@ import { Point } from '../models/point'
 export enum GeneratorType {
   SineGenerator = 'SineGenerator',
   SquareGenerator = 'SquareGenerator',
+  LinearGenerator = 'LinearGenerator',
 }
 
 export class ValueGenerator {
@@ -68,6 +69,14 @@ export class ValueGenerator {
         this.generatingFunction = (): Point => {
           const time = (Date.now() - this.initTime) / 1000
           const value = Math.floor(time / this.period) % 2 ? -1 * this.multiplier : 1 * this.multiplier
+
+          return new Point(time, value)
+        }
+        break
+      case GeneratorType.LinearGenerator:
+        this.generatingFunction = (): Point => {
+          const time = (Date.now() - this.initTime) / 1000
+          const value = time * this.multiplier
 
           return new Point(time, value)
         }

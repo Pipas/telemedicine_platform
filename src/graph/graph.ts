@@ -1,4 +1,4 @@
-import { Scene, Camera, Group } from 'three'
+import { Scene, Camera, Group, Box3 } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
 import { Directions } from '../utils/directions'
@@ -23,7 +23,11 @@ export class Graph {
   yAxis: YAxis
   lastPoint: Point
 
+  windowWidth: number
+
   plotLine: Group
+  currentChunk: Group
+  lineChunks: Group[]
 
   pointBuffer: Point[]
 
@@ -55,6 +59,11 @@ export class Graph {
     this.plotLine.scale.x = this.xZoom
     this.plotLine.scale.y = this.yZoom
     this.scene.add(this.plotLine)
+
+    this.currentChunk = new Group()
+    this.plotLine.add(this.currentChunk)
+
+    this.lineChunks = []
   }
 
   private setupCamera(): void {
@@ -62,6 +71,8 @@ export class Graph {
 
     // 0 of the graph to be in the start of the camera
     this.camera.position.x = this.cameraDistance * this.aspectRatio
+
+    this.windowWidth = this.cameraDistance * this.aspectRatio * 2
 
     this.visibleRange = new VisibleRange(
       0,
@@ -83,16 +94,35 @@ export class Graph {
     }
   }
 
-  private checkUpdateVisibleRange(point: Point): void {
-    if (point.x > this.visibleRange.maxX) {
-      const delta = point.x - this.visibleRange.maxX
+  private updateVisibleRange(): void {
+    const plotLineOutline = new Box3().setFromObject(this.plotLine)
+
+    if (plotLineOutline.max.x / this.xZoom > this.visibleRange.maxX) {
+      const delta = plotLineOutline.max.x / this.xZoom - this.visibleRange.maxX
       this.moveCamera(Directions.RIGHT, delta)
       this.xAxis.rebuildSteps()
       this.yAxis.moveSteps(delta)
     }
-    if (point.y > this.visibleRange.maxY || point.y < this.visibleRange.minY) {
-      this.updateVerticalScale(point.y)
+    if (
+      plotLineOutline.max.y / this.yZoom > this.visibleRange.maxY ||
+      plotLineOutline.min.y / this.yZoom < this.visibleRange.minY
+    ) {
+      this.updateVerticalScale(
+        Math.max(Math.abs(plotLineOutline.min.y / this.yZoom), plotLineOutline.max.y / this.yZoom),
+      )
       this.yAxis.rebuildSteps()
+    }
+
+    const currentChunkOutline = new Box3().setFromObject(this.currentChunk)
+
+    if (currentChunkOutline.max.x - currentChunkOutline.min.x > this.windowWidth) {
+      this.currentChunk = new Group()
+      this.plotLine.add(this.currentChunk)
+
+      if (this.plotLine.children.length > 2) {
+        //this.lineChunks.push(this.plotLine.children[0] as Group)
+        this.plotLine.remove(this.plotLine.children[0])
+      }
     }
   }
 
@@ -118,15 +148,11 @@ export class Graph {
     this.pointBuffer.forEach(point => {
       const line = GraphLine.create(this.lastPoint, point)
       this.lastPoint = point
-      this.plotLine.add(line)
+      this.currentChunk.add(line)
     })
 
     this.pointBuffer = []
 
-    for (let i = 0; this.plotLine.children.length > 2000; i++) {
-      this.plotLine.remove(this.plotLine.children[i])
-    }
-
-    this.checkUpdateVisibleRange(this.lastPoint)
+    this.updateVisibleRange()
   }
 }

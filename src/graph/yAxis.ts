@@ -16,7 +16,9 @@ export class YAxis extends Axis {
 
   rebuildSteps(): void {
     if (this.calculateNewStep()) {
-      this.steps.forEach(step => step.remove())
+      while (this.steps.length > 0) {
+        this.steps.pop().remove()
+      }
       this.buildSteps()
     } else {
       this.steps.forEach(step => {
@@ -32,16 +34,18 @@ export class YAxis extends Axis {
   }
 
   private calculateNewStep(): boolean {
-    let newStepSize
+    let newStepSize = this.stepSize
     const magnitude = Math.pow(10, Math.floor(Math.log((this.graph.visibleRange.maxY * 2) / 3) / Math.LN10))
 
     this.stepMultipliers.forEach(multiplier => {
       if (multiplier * magnitude <= (this.graph.visibleRange.maxY * 2) / 3) newStepSize = multiplier * magnitude
     })
 
+    const rebuildSteps =
+      this.stepSize != newStepSize || Math.floor(this.graph.visibleRange.maxY / newStepSize) > this.steps.length / 2
     this.stepSize = newStepSize
 
-    return this.stepSize != newStepSize
+    return rebuildSteps
   }
 
   private buildAxis(): void {

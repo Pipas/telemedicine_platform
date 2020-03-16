@@ -27,7 +27,6 @@ function initGUI(): void {
     .add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator])
     .onChange(() => generator.updateGeneratingFunction())
   gui.add(generator, 'frequency', 1, 1000).onChange(() => generator.start())
-  gui.add(generator, 'maxValue')
   gui.add(generator, 'period')
   gui.add(generator, 'multiplier')
   gui.add(generator, 'toggle')

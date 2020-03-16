@@ -15,15 +15,13 @@ export class ValueGenerator {
   public period: number
   public multiplier: number
   public frequency: number
-  public maxValue: number
 
   constructor(callback: (point: Point) => void) {
     this.generating = false
     this.frequency = 60
     this.callback = callback
-    this.maxValue = 10
     this.period = 1
-    this.multiplier = 1
+    this.multiplier = 10
     this.type = GeneratorType.SineGenerator
 
     this.updateGeneratingFunction()
@@ -61,7 +59,7 @@ export class ValueGenerator {
       case GeneratorType.SineGenerator:
         this.generatingFunction = (): Point => {
           const time = (Date.now() - this.initTime) / 1000
-          const value = Math.sin((Math.PI * time) / this.period) * this.maxValue * this.multiplier
+          const value = Math.sin((Math.PI * time) / this.period) * this.multiplier
 
           return new Point(time, value)
         }
@@ -69,8 +67,7 @@ export class ValueGenerator {
       case GeneratorType.SquareGenerator:
         this.generatingFunction = (): Point => {
           const time = (Date.now() - this.initTime) / 1000
-          const value =
-            Math.floor(time / this.period) % 2 ? -this.maxValue * this.multiplier : this.maxValue * this.multiplier
+          const value = Math.floor(time / this.period) % 2 ? -1 * this.multiplier : 1 * this.multiplier
 
           return new Point(time, value)
         }

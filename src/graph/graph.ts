@@ -1,8 +1,6 @@
-import { Scene, Camera, Group, Box3 } from 'three'
+import { Scene, Camera, Group, Box3, Vector2 } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
-import { Directions } from '../utils/directions'
-import { Point } from '../models/point'
 import { VisibleRange } from '../models/visibleRange'
 import { GraphLine } from '../models/graphLine'
 
@@ -21,7 +19,7 @@ export class Graph {
   yZoom: number
   xAxis: XAxis
   yAxis: YAxis
-  lastPoint: Point
+  lastPoint: Vector2
 
   windowWidth: number
 
@@ -29,7 +27,7 @@ export class Graph {
   currentChunk: Group
   lineChunks: Group[]
 
-  pointBuffer: Point[]
+  pointBuffer: Vector2[]
 
   constructor(scene: Scene, camera: Camera, aspectRatio: number) {
     this.scene = scene
@@ -39,7 +37,7 @@ export class Graph {
     this.xZoom = 10
     this.yZoom = 1
 
-    this.lastPoint = new Point(0, 0)
+    this.lastPoint = new Vector2(0, 0)
 
     this.pointBuffer = []
 
@@ -82,26 +80,37 @@ export class Graph {
     )
   }
 
-  private moveCamera(direction: Directions, delta: number): void {
-    if (direction === Directions.LEFT) {
-      this.camera.position.x -= delta * this.xZoom
-      this.visibleRange.maxX -= delta
-      this.visibleRange.minX -= delta
-    } else {
-      this.camera.position.x += delta * this.xZoom
-      this.visibleRange.maxX += delta
-      this.visibleRange.minX += delta
-    }
+  setCameraToLiveValue(): void {
+    this.cameraFollow = true
+  }
+
+  dragCamera(delta: number): void {
+    this.cameraFollow = false
+
+    this.moveCamera(delta)
+  }
+
+  private moveCamera(delta: number): void {
+    const updatedDelta =
+      this.camera.position.x + delta < this.cameraDistance * this.aspectRatio
+        ? this.cameraDistance * this.aspectRatio - this.camera.position.x
+        : delta
+
+    this.camera.position.x += updatedDelta
+
+    this.visibleRange.maxX += updatedDelta / this.xZoom
+    this.visibleRange.minX += updatedDelta / this.xZoom
+
+    this.xAxis.updateSteps()
+    this.yAxis.moveSteps(updatedDelta)
   }
 
   private updateVisibleRange(): void {
     const plotLineOutline = new Box3().setFromObject(this.plotLine)
 
-    if (plotLineOutline.max.x / this.xZoom > this.visibleRange.maxX) {
+    if (plotLineOutline.max.x / this.xZoom > this.visibleRange.maxX && this.cameraFollow) {
       const delta = plotLineOutline.max.x / this.xZoom - this.visibleRange.maxX
-      this.moveCamera(Directions.RIGHT, delta)
-      this.xAxis.rebuildSteps()
-      this.yAxis.moveSteps(delta)
+      this.moveCamera(delta)
     }
     if (
       plotLineOutline.max.y / this.yZoom > this.visibleRange.maxY ||
@@ -138,7 +147,7 @@ export class Graph {
     this.cameraFollow = !this.cameraFollow
   }
 
-  addPoint(point: Point): void {
+  addPoint(point: Vector2): void {
     this.pointBuffer.push(point)
   }
 

@@ -1,6 +1,6 @@
-import { Scene, Color, WebGLRenderer, PerspectiveCamera } from 'three'
+import { Scene, Color, WebGLRenderer, PerspectiveCamera, Vector2 } from 'three'
 import { Graph } from './graph/graph'
-import { Point } from './models/point'
+import { MouseDragger } from './graph/mouseDragger'
 
 type ScreenDimentions = { width: number; height: number }
 
@@ -11,6 +11,8 @@ export class GraphManager {
   private renderer: WebGLRenderer
   private camera: PerspectiveCamera
   private graph: Graph
+
+  private mouseDragger: MouseDragger
 
   private screenDimensions: ScreenDimentions
 
@@ -27,6 +29,16 @@ export class GraphManager {
     this.buildCamera()
 
     this.graph = new Graph(this.scene, this.camera, this.screenDimensions.width / this.screenDimensions.height)
+
+    this.initMouseDragger()
+  }
+
+  private initMouseDragger(): void {
+    this.mouseDragger = new MouseDragger(this.canvas)
+
+    this.mouseDragger.addEventListener('drag', event => {
+      this.graph.dragCamera(-event.delta.x * (this.graph.windowWidth / this.canvas.offsetWidth))
+    })
   }
 
   private buildScene(): void {
@@ -49,12 +61,16 @@ export class GraphManager {
     this.camera = new PerspectiveCamera(fieldOfView, aspectRatio, nearPlane, farPlane)
   }
 
-  addPoint(point: Point): void {
+  addPoint(point: Vector2): void {
     this.graph.addPoint(point)
   }
 
   initGraph(): void {
     this.graph.init()
+  }
+
+  followLiveValue(): void {
+    this.graph.setCameraToLiveValue()
   }
 
   update(): void {

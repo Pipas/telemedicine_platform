@@ -1,7 +1,7 @@
 import { GraphManager } from './graphManager'
 import { ValueGenerator, GeneratorType } from './generator/valueGenerator'
 import * as dat from 'dat.gui'
-import { Point } from './models/point'
+import { Vector2 } from 'three'
 
 let graphManager: GraphManager
 let generator: ValueGenerator
@@ -30,9 +30,10 @@ function initGUI(): void {
   gui.add(generator, 'period')
   gui.add(generator, 'multiplier')
   gui.add(generator, 'toggle')
+  gui.add(graphManager, 'followLiveValue')
 }
 
-const generatorCallback = (point: Point): void => graphManager.addPoint(point)
+const generatorCallback = (point: Vector2): void => graphManager.addPoint(point)
 
 window.onload = function(): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement

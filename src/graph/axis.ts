@@ -1,6 +1,6 @@
-import { Line, Vector3, LineBasicMaterial, BufferGeometry, Texture, Sprite, SpriteMaterial } from 'three'
+import { LineBasicMaterial } from 'three'
 import { Graph } from '../graph/graph'
-import { AxisStep, StepDirection } from '../models/axisStep'
+import { AxisStep } from '../models/axisStep'
 
 export class Axis {
   protected graph: Graph

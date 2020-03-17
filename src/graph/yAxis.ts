@@ -29,7 +29,7 @@ export class YAxis extends Axis {
 
   moveSteps(delta: number): void {
     this.steps.forEach(step => {
-      step.group.position.x += delta * this.graph.xZoom
+      step.group.position.x += delta
     })
   }
 

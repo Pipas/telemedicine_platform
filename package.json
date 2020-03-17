@@ -33,7 +33,8 @@
   },
   "dependencies": {
     "dat.gui": "^0.7.6",
-    "three": "^0.114.0"
+    "three": "^0.114.0",
+    "three-dragger": "^1.0.1"
   },
   "husky": {
     "hooks": {

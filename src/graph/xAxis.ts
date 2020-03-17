@@ -4,8 +4,6 @@ import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
 
 export class XAxis extends Axis {
-  private lastStep: number
-
   constructor(graph: Graph) {
     super(graph)
 
@@ -13,13 +11,19 @@ export class XAxis extends Axis {
     this.buildSteps()
   }
 
-  rebuildSteps(): void {
-    if (this.graph.visibleRange.maxX > this.lastStep + this.stepSize) {
-      this.lastStep += this.stepSize
-      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, this.lastStep))
+  updateSteps(): void {
+    const firstValue = this.steps[0].value
+    const lastValue = this.steps[this.steps.length - 1].value
+
+    if (this.graph.visibleRange.maxX > lastValue + this.stepSize) {
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, lastValue + this.stepSize))
+    } else if (this.graph.visibleRange.maxX < lastValue) {
+      this.steps.pop().remove()
     }
 
-    if (this.graph.visibleRange.minX > this.steps[0].value) {
+    if (this.graph.visibleRange.minX < firstValue - this.stepSize) {
+      this.steps.unshift(new AxisStep(this.graph, StepDirection.horizontal, firstValue - this.stepSize))
+    } else if (this.graph.visibleRange.minX > firstValue) {
       this.steps.shift().remove()
     }
   }
@@ -32,11 +36,10 @@ export class XAxis extends Axis {
   }
 
   private buildSteps(): void {
-    this.lastStep = Math.ceil(this.graph.visibleRange.minX) - (Math.ceil(this.graph.visibleRange.maxX) % this.stepSize)
+    let lastStep = Math.ceil(this.graph.visibleRange.minX) - (Math.ceil(this.graph.visibleRange.maxX) % this.stepSize)
 
-    for (this.lastStep; this.lastStep < this.graph.visibleRange.maxX; this.lastStep += this.stepSize) {
-      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, this.lastStep))
+    for (lastStep; lastStep < this.graph.visibleRange.maxX; lastStep += this.stepSize) {
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, lastStep))
     }
-    this.lastStep--
   }
 }

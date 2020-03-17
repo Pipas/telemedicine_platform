@@ -1,4 +1,4 @@
-import { Point } from '../models/point'
+import { Vector2 } from 'three'
 
 export enum GeneratorType {
   SineGenerator = 'SineGenerator',
@@ -9,15 +9,15 @@ export enum GeneratorType {
 export class ValueGenerator {
   private interval: NodeJS.Timeout
   protected generating: boolean
-  protected callback: (point: Point) => void
+  protected callback: (point: Vector2) => void
   protected initTime: number
-  private generatingFunction: () => Point
+  private generatingFunction: () => Vector2
   public type: GeneratorType
   public period: number
   public multiplier: number
   public frequency: number
 
-  constructor(callback: (point: Point) => void) {
+  constructor(callback: (point: Vector2) => void) {
     this.generating = false
     this.frequency = 60
     this.callback = callback
@@ -58,27 +58,27 @@ export class ValueGenerator {
   updateGeneratingFunction(): void {
     switch (this.type) {
       case GeneratorType.SineGenerator:
-        this.generatingFunction = (): Point => {
+        this.generatingFunction = (): Vector2 => {
           const time = (Date.now() - this.initTime) / 1000
           const value = Math.sin((Math.PI * time) / this.period) * this.multiplier
 
-          return new Point(time, value)
+          return new Vector2(time, value)
         }
         break
       case GeneratorType.SquareGenerator:
-        this.generatingFunction = (): Point => {
+        this.generatingFunction = (): Vector2 => {
           const time = (Date.now() - this.initTime) / 1000
           const value = Math.floor(time / this.period) % 2 ? -1 * this.multiplier : 1 * this.multiplier
 
-          return new Point(time, value)
+          return new Vector2(time, value)
         }
         break
       case GeneratorType.LinearGenerator:
-        this.generatingFunction = (): Point => {
+        this.generatingFunction = (): Vector2 => {
           const time = (Date.now() - this.initTime) / 1000
           const value = time * this.multiplier
 
-          return new Point(time, value)
+          return new Vector2(time, value)
         }
         break
       default:
@@ -86,7 +86,7 @@ export class ValueGenerator {
     }
   }
 
-  generate(): Point {
+  generate(): Vector2 {
     return this.generatingFunction()
   }
 }

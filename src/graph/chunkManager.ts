@@ -40,14 +40,19 @@ export class ChunkManager {
     }
   }
 
-  checkChunkChange(): void {
-    if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
-      this.visibleChunks.push(this.recallChunk(this.visibleChunks[this.visibleChunks.length - 1].id + 1))
-    }
-
-    if (this.visibleChunks[0].firstValue < this.graph.visibleRange.minX && this.visibleChunks.length > 2) {
-      // this.visibleChunks.unshift(this.recallChunk(this.visibleChunks[0].id - 1))
-      this.shiftVisibleChunk()
+  checkChunkChange(delta: number): void {
+    if (delta > 0) {
+      if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX)
+        this.pushVisibleChunk()
+      if (this.visibleChunks[0].firstValue < this.graph.visibleRange.minX && this.visibleChunks.length > 2)
+        this.shiftVisibleChunk()
+    } else {
+      if (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
+        this.popVisibleChunk()
+      }
+      if (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
+        this.unshiftVisibleChunk()
+      }
     }
   }
 
@@ -56,7 +61,11 @@ export class ChunkManager {
     this.storeChunk(this.updatingChunk)
   }
 
-  private pushVisibleChunk(chunk: Chunk): void {
+  private pushVisibleChunk(): void {
+    const chunk = this.storedChunks.get(this.visibleChunks[this.visibleChunks.length - 1].id + 1)
+
+    if (chunk == null) return
+
     this.showChunk(chunk)
     this.visibleChunks.push(chunk)
   }
@@ -65,9 +74,13 @@ export class ChunkManager {
     this.hideChunk(this.visibleChunks.pop())
   }
 
-  private unshiftVisibleChunk(chunk: Chunk): void {
+  private unshiftVisibleChunk(): void {
+    const chunk = this.storedChunks.get(this.visibleChunks[0].id - 1)
+
+    if (chunk == null) return
+
     this.showChunk(chunk)
-    this.visibleChunks.push(chunk)
+    this.visibleChunks.unshift(chunk)
   }
 
   private shiftVisibleChunk(): void {

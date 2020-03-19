@@ -2,9 +2,12 @@ import { GraphManager } from './graphManager'
 import { ValueGenerator, GeneratorType } from './generator/valueGenerator'
 import * as dat from 'dat.gui'
 import { Vector2 } from 'three'
+import * as Stats from 'stats.js'
 
 let graphManager: GraphManager
 let generator: ValueGenerator
+
+let stats: Stats
 
 function resizeCanvas(): void {
   graphManager.onWindowResize()
@@ -17,7 +20,9 @@ function bindEventListeners(): void {
 }
 
 function render(): void {
+  stats.begin()
   graphManager.update()
+  stats.end()
   requestAnimationFrame(render)
 }
 
@@ -31,6 +36,10 @@ function initGUI(): void {
   gui.add(generator, 'multiplier')
   gui.add(generator, 'toggle')
   gui.add(graphManager, 'followLiveValue')
+
+  stats = new Stats()
+  stats.showPanel(0)
+  document.body.appendChild(stats.dom)
 }
 
 const generatorCallback = (point: Vector2): void => graphManager.addPoint(point)

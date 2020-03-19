@@ -115,8 +115,6 @@ export class Graph {
   }
 
   private updateHorizontalRange(delta: number): void {
-    console.log('updating Horizontal Range')
-
     this.camera.position.x += delta
 
     this.visibleRange.maxX += delta / this.xZoom
@@ -126,12 +124,10 @@ export class Graph {
     this.xAxis.moveAxis(delta)
     this.yAxis.moveSteps(delta)
 
-    this.chunkManager.checkChunkChange()
+    this.chunkManager.checkChunkChange(delta)
   }
 
   private updateVerticalRange(newValue: number): void {
-    console.log('updating Vertical Range')
-
     this.yZoom = (this.cameraDistance * (1 - this.percentagePadding)) / Math.abs(newValue)
     this.visibleRange.minY = -Math.abs(newValue)
     this.visibleRange.maxY = Math.abs(newValue)

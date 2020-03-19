@@ -18,17 +18,17 @@ export class MouseDragger extends EventDispatcher {
   }
 
   onDocumentMouseDown = (event: MouseEvent): void => {
-    event.preventDefault()
-
     if (!this.mouseInElement(event)) return
+
+    event.preventDefault()
 
     this.mousePosition = this.getMousePosition(event)
   }
 
   onDocumentMouseMove = (event: MouseEvent): void => {
-    event.preventDefault()
-
     if (this.mousePosition == null) return
+
+    event.preventDefault()
 
     const newPosition = this.getMousePosition(event)
 
@@ -43,10 +43,6 @@ export class MouseDragger extends EventDispatcher {
   }
 
   onDocumentMouseUp = (event: MouseEvent): void => {
-    event.preventDefault()
-
-    // if (!this.mouseInElement(event)) return
-
     this.mousePosition = null
   }
 

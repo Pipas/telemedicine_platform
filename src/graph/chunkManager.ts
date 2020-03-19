@@ -42,10 +42,12 @@ export class ChunkManager {
 
   checkChunkChange(delta: number): void {
     if (delta > 0) {
-      if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX)
+      if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
         this.pushVisibleChunk()
-      if (this.visibleChunks[0].firstValue < this.graph.visibleRange.minX && this.visibleChunks.length > 2)
+      }
+      if (this.visibleChunks[0].lastValue < this.graph.visibleRange.minX) {
         this.shiftVisibleChunk()
+      }
     } else {
       if (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
         this.popVisibleChunk()

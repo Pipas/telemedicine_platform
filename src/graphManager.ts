@@ -48,8 +48,8 @@ export class GraphManager {
 
   private buildRender(): void {
     this.renderer = new WebGLRenderer({ canvas: this.canvas })
-    // const DPR = (window.devicePixelRatio) ? window.devicePixelRatio : 1
-    // renderer.setPixelRatio(DPR)
+    const DPR = window.devicePixelRatio ? window.devicePixelRatio : 1
+    this.renderer.setPixelRatio(DPR)
     this.renderer.setSize(this.screenDimensions.width, this.screenDimensions.height)
   }
 
@@ -74,8 +74,8 @@ export class GraphManager {
   }
 
   update(): void {
-    this.graph.update()
     this.renderer.render(this.scene, this.camera)
+    this.graph.update()
   }
 
   onWindowResize(): void {

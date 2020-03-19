@@ -1,4 +1,3 @@
-import { Line, Vector3, BufferGeometry } from 'three'
 import { Graph } from '../graph/graph'
 import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
@@ -9,7 +8,6 @@ export class YAxis extends Axis {
   constructor(graph: Graph) {
     super(graph)
 
-    this.buildAxis()
     this.calculateNewStep()
     this.buildSteps()
   }
@@ -46,13 +44,6 @@ export class YAxis extends Axis {
     this.stepSize = newStepSize
 
     return rebuildSteps
-  }
-
-  private buildAxis(): void {
-    const geometry = new BufferGeometry().setFromPoints([new Vector3(0, -100000, 0), new Vector3(0, 100000, 0)])
-
-    const line = new Line(geometry, Axis.material)
-    this.graph.scene.add(line)
   }
 
   private buildSteps(): void {

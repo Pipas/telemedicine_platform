@@ -41,14 +41,13 @@ export class ChunkManager {
   }
 
   checkChunkChange(): void {
-    // if (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
-    //   this.visibleChunks.unshift(this.recallChunk(this.visibleChunks[0].id - 1))
-    //   this.hideChunk(this.visibleChunks.pop())
-    // }
-
     if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
-      console.log('here')
       this.visibleChunks.push(this.recallChunk(this.visibleChunks[this.visibleChunks.length - 1].id + 1))
+    }
+
+    if (this.visibleChunks[0].firstValue < this.graph.visibleRange.minX && this.visibleChunks.length > 2) {
+      // this.visibleChunks.unshift(this.recallChunk(this.visibleChunks[0].id - 1))
+      this.shiftVisibleChunk()
     }
   }
 

@@ -55,7 +55,7 @@ export class Graph {
     this.plotLine.scale.y = this.yZoom
     this.scene.add(this.plotLine)
 
-    this.chunkManager = new ChunkManager(this, this.cameraDistance * this.aspectRatio * 2)
+    this.chunkManager = new ChunkManager(this, this.windowWidth)
   }
 
   private setupCamera(): void {
@@ -63,6 +63,7 @@ export class Graph {
 
     // 0 of the graph to be in the start of the camera
     this.camera.position.x = this.cameraDistance * this.aspectRatio
+    this.windowWidth = this.cameraDistance * this.aspectRatio * 2
 
     this.visibleRange = new VisibleRange(
       0,
@@ -88,7 +89,7 @@ export class Graph {
         ? this.cameraDistance * this.aspectRatio - this.camera.position.x
         : delta
 
-    this.updateHorizontalRange(delta)
+    this.updateHorizontalRange(updatedDelta)
   }
 
   private checkUpdateVerticalRange(): void {
@@ -122,6 +123,7 @@ export class Graph {
     this.visibleRange.minX += delta / this.xZoom
 
     this.xAxis.updateSteps()
+    this.xAxis.moveAxis(delta)
     this.yAxis.moveSteps(delta)
 
     this.chunkManager.checkChunkChange()

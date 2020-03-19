@@ -1,4 +1,4 @@
-import { LineBasicMaterial } from 'three'
+import { LineBasicMaterial, Line } from 'three'
 import { Graph } from '../graph/graph'
 import { AxisStep } from '../models/axisStep'
 
@@ -11,6 +11,7 @@ export class Axis {
   // Step size to draw indicator
   protected stepSize = 1
 
+  protected axis: Line
   protected steps: AxisStep[]
 
   constructor(graph: Graph) {

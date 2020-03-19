@@ -2,7 +2,7 @@ import { Scene, Camera, Group, Box3, Vector2 } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
 import { VisibleRange } from '../models/visibleRange'
-import { GraphLine } from '../models/graphLine'
+import { ChunkManager } from './chunkManager'
 
 export class Graph {
   private cameraDistance = 10
@@ -19,13 +19,12 @@ export class Graph {
   yZoom: number
   xAxis: XAxis
   yAxis: YAxis
-  lastPoint: Vector2
 
   windowWidth: number
 
   plotLine: Group
-  currentChunk: Group
-  lineChunks: Group[]
+
+  chunkManager: ChunkManager
 
   pointBuffer: Vector2[]
 
@@ -36,8 +35,6 @@ export class Graph {
 
     this.xZoom = 10
     this.yZoom = 1
-
-    this.lastPoint = new Vector2(0, 0)
 
     this.pointBuffer = []
 
@@ -58,10 +55,7 @@ export class Graph {
     this.plotLine.scale.y = this.yZoom
     this.scene.add(this.plotLine)
 
-    this.currentChunk = new Group()
-    this.plotLine.add(this.currentChunk)
-
-    this.lineChunks = []
+    this.chunkManager = new ChunkManager(this, this.cameraDistance * this.aspectRatio * 2)
   }
 
   private setupCamera(): void {
@@ -69,8 +63,6 @@ export class Graph {
 
     // 0 of the graph to be in the start of the camera
     this.camera.position.x = this.cameraDistance * this.aspectRatio
-
-    this.windowWidth = this.cameraDistance * this.aspectRatio * 2
 
     this.visibleRange = new VisibleRange(
       0,
@@ -96,51 +88,55 @@ export class Graph {
         ? this.cameraDistance * this.aspectRatio - this.camera.position.x
         : delta
 
-    this.camera.position.x += updatedDelta
-
-    this.visibleRange.maxX += updatedDelta / this.xZoom
-    this.visibleRange.minX += updatedDelta / this.xZoom
-
-    this.xAxis.updateSteps()
-    this.yAxis.moveSteps(updatedDelta)
+    this.updateHorizontalRange(delta)
   }
 
-  private updateVisibleRange(): void {
+  private checkUpdateVerticalRange(): void {
     const plotLineOutline = new Box3().setFromObject(this.plotLine)
 
-    if (plotLineOutline.max.x / this.xZoom > this.visibleRange.maxX && this.cameraFollow) {
-      const delta = plotLineOutline.max.x / this.xZoom - this.visibleRange.maxX
-      this.moveCamera(delta)
-    }
     if (
       plotLineOutline.max.y / this.yZoom > this.visibleRange.maxY ||
       plotLineOutline.min.y / this.yZoom < this.visibleRange.minY
     ) {
-      this.updateVerticalScale(
+      this.updateVerticalRange(
         Math.max(Math.abs(plotLineOutline.min.y / this.yZoom), plotLineOutline.max.y / this.yZoom),
       )
-      this.yAxis.rebuildSteps()
-    }
-
-    const currentChunkOutline = new Box3().setFromObject(this.currentChunk)
-
-    if (currentChunkOutline.max.x - currentChunkOutline.min.x > this.windowWidth) {
-      this.currentChunk = new Group()
-      this.plotLine.add(this.currentChunk)
-
-      if (this.plotLine.children.length > 2) {
-        //this.lineChunks.push(this.plotLine.children[0] as Group)
-        this.plotLine.remove(this.plotLine.children[0])
-      }
     }
   }
 
-  private updateVerticalScale(newValue: number): void {
+  private moveCameraToLine(): void {
+    this.checkUpdateVerticalRange()
+
+    if (this.chunkManager.lastPoint.x > this.visibleRange.maxX) {
+      const delta = this.chunkManager.lastPoint.x - this.visibleRange.maxX
+      this.moveCamera(delta)
+    }
+  }
+
+  private updateHorizontalRange(delta: number): void {
+    console.log('updating Horizontal Range')
+
+    this.camera.position.x += delta
+
+    this.visibleRange.maxX += delta / this.xZoom
+    this.visibleRange.minX += delta / this.xZoom
+
+    this.xAxis.updateSteps()
+    this.yAxis.moveSteps(delta)
+
+    this.chunkManager.checkChunkChange()
+  }
+
+  private updateVerticalRange(newValue: number): void {
+    console.log('updating Vertical Range')
+
     this.yZoom = (this.cameraDistance * (1 - this.percentagePadding)) / Math.abs(newValue)
     this.visibleRange.minY = -Math.abs(newValue)
     this.visibleRange.maxY = Math.abs(newValue)
 
     this.plotLine.scale.y = this.yZoom
+
+    this.yAxis.rebuildSteps()
   }
 
   toggleCameraFollow(): void {
@@ -155,13 +151,13 @@ export class Graph {
     if (this.pointBuffer.length === 0) return
 
     this.pointBuffer.forEach(point => {
-      const line = GraphLine.create(this.lastPoint, point)
-      this.lastPoint = point
-      this.currentChunk.add(line)
+      this.chunkManager.addNewPoint(point)
     })
+
+    this.chunkManager.checkChunkSize()
 
     this.pointBuffer = []
 
-    this.updateVisibleRange()
+    if (this.cameraFollow) this.moveCameraToLine()
   }
 }

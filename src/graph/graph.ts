@@ -152,8 +152,6 @@ export class Graph {
       this.chunkManager.addNewPoint(point)
     })
 
-    this.chunkManager.checkChunkSize()
-
     this.pointBuffer = []
 
     if (this.cameraFollow) this.moveCameraToLine()

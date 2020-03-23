@@ -42,7 +42,7 @@ export class MouseDragger extends EventDispatcher {
     this.mousePosition = newPosition
   }
 
-  onDocumentMouseUp = (event: MouseEvent): void => {
+  onDocumentMouseUp = (): void => {
     this.mousePosition = null
   }
 

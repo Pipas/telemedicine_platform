@@ -1,6 +1,5 @@
 import { Chunk } from '../models/chunk'
 import { Vector2, Box3 } from 'three'
-import { GraphLine } from '../models/graphLine'
 import { Graph } from './graph'
 
 export class ChunkManager {
@@ -27,16 +26,12 @@ export class ChunkManager {
   }
 
   addNewPoint(point: Vector2): void {
-    const line = GraphLine.create(this.lastPoint, point)
+    this.updatingChunk.add(this.lastPoint, point)
     this.lastPoint = point
-    this.updatingChunk.add(line, point)
-  }
 
-  checkChunkSize(): void {
-    const currentChunkOutline = new Box3().setFromObject(this.updatingChunk.group)
-
-    if (currentChunkOutline.max.x - currentChunkOutline.min.x > this.chunkWidth) {
+    if (this.updatingChunk.isFull()) {
       this.createNewUpdatingChunk()
+      this.checkChunkChange(1)
     }
   }
 
@@ -90,11 +85,11 @@ export class ChunkManager {
   }
 
   private hideChunk(chunk: Chunk): void {
-    this.graph.plotLine.remove(chunk.group)
+    this.graph.plotLine.remove(chunk.line /*chunk.group*/)
   }
 
   private showChunk(chunk: Chunk): void {
-    this.graph.plotLine.add(chunk.group)
+    this.graph.plotLine.add(chunk.line /*chunk.group*/)
   }
 
   private storeChunk(chunk: Chunk): void {

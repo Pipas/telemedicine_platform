@@ -3,11 +3,15 @@ import { ValueGenerator, GeneratorType } from './generator/valueGenerator'
 import * as dat from 'dat.gui'
 import { Vector2 } from 'three'
 import * as Stats from 'stats.js'
+import { WebsocketManager } from './websocketManager'
 
 let graphManager: GraphManager
 let generator: ValueGenerator
+let websocketManager: WebsocketManager
 
 let stats: Stats
+
+const generatorCallback = (point: Vector2): void => graphManager.addPoint(point)
 
 function resizeCanvas(): void {
   graphManager.onWindowResize()
@@ -28,21 +32,50 @@ function render(): void {
 
 function initGUI(): void {
   const gui = new dat.GUI()
-  gui
-    .add(generator, 'type', [GeneratorType.SineGenerator, GeneratorType.SquareGenerator, GeneratorType.LinearGenerator])
-    .onChange(() => generator.updateGeneratingFunction())
-  gui.add(generator, 'frequency', 1, 1000).onChange(() => generator.start())
-  gui.add(generator, 'period')
-  gui.add(generator, 'multiplier')
-  gui.add(generator, 'toggle')
-  gui.add(graphManager, 'followLiveValue')
 
+  if (generator != null) {
+    gui
+      .add(generator, 'type', [
+        GeneratorType.SineGenerator,
+        GeneratorType.SquareGenerator,
+        GeneratorType.LinearGenerator,
+      ])
+      .onChange(() => generator.updateGeneratingFunction())
+    gui.add(generator, 'frequency', 1, 1000).onChange(() => generator.start())
+    gui.add(generator, 'period')
+    gui.add(generator, 'multiplier')
+    gui.add(generator, 'toggle')
+  }
+
+  gui.add(graphManager, 'followLiveValue')
+}
+
+function initStats(): void {
   stats = new Stats()
   stats.showPanel(0)
   document.body.appendChild(stats.dom)
 }
 
-const generatorCallback = (point: Vector2): void => graphManager.addPoint(point)
+function initWebSocket(): void {
+  websocketManager = new WebsocketManager(
+    () => {
+      console.log('WebSocketConnected')
+      initGUI()
+    },
+    (data: string) => {
+      const points = JSON.parse(data)
+      points.forEach((point: { x: number; y: number }) => {
+        graphManager.addPoint(new Vector2(point.x, point.y))
+      })
+    },
+    () => {
+      console.log('error')
+      generator = new ValueGenerator(generatorCallback)
+      generator.start()
+      initGUI()
+    },
+  )
+}
 
 window.onload = function(): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement
@@ -52,9 +85,8 @@ window.onload = function(): void {
   bindEventListeners()
   graphManager.initGraph()
 
-  generator = new ValueGenerator(generatorCallback)
-  generator.start()
+  initWebSocket()
 
-  initGUI()
+  initStats()
   render()
 }

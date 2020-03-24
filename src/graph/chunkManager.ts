@@ -1,5 +1,5 @@
 import { Chunk } from '../models/chunk'
-import { Vector2, Box3 } from 'three'
+import { Vector2 } from 'three'
 import { Graph } from './graph'
 
 export class ChunkManager {
@@ -96,13 +96,5 @@ export class ChunkManager {
     if (!this.storedChunks.has(chunk.id)) {
       this.storedChunks.set(chunk.id, chunk)
     }
-  }
-
-  private recallChunk(id: number): Chunk {
-    const chunk = this.storedChunks.get(id)
-
-    this.showChunk(chunk)
-
-    return chunk
   }
 }

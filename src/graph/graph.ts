@@ -7,6 +7,7 @@ import { ChunkManager } from './chunkManager'
 export class Graph {
   private cameraDistance = 10
   private percentagePadding = 0.1
+  private verticalUpdateSpeed = 0.05
 
   public scene: Scene
   camera: Camera
@@ -95,13 +96,10 @@ export class Graph {
   private checkUpdateVerticalRange(): void {
     const plotLineOutline = new Box3().setFromObject(this.plotLine)
 
-    if (
-      plotLineOutline.max.y / this.yZoom > this.visibleRange.maxY ||
-      plotLineOutline.min.y / this.yZoom < this.visibleRange.minY
-    ) {
-      this.updateVerticalRange(
-        Math.max(Math.abs(plotLineOutline.min.y / this.yZoom), plotLineOutline.max.y / this.yZoom),
-      )
+    const highestValue = Math.max(Math.abs(plotLineOutline.min.y / this.yZoom), plotLineOutline.max.y / this.yZoom)
+
+    if (highestValue != this.visibleRange.maxY) {
+      this.updateVerticalRange(highestValue)
     }
   }
 
@@ -127,10 +125,19 @@ export class Graph {
     this.chunkManager.checkChunkChange(delta)
   }
 
-  private updateVerticalRange(newValue: number): void {
-    this.yZoom = (this.cameraDistance * (1 - this.percentagePadding)) / Math.abs(newValue)
-    this.visibleRange.minY = -Math.abs(newValue)
-    this.visibleRange.maxY = Math.abs(newValue)
+  private updateVerticalRange(value: number): void {
+    let newValue = Math.abs(value)
+
+    if (Math.abs(this.visibleRange.maxY - newValue) > this.visibleRange.maxY * this.verticalUpdateSpeed) {
+      newValue =
+        this.visibleRange.maxY - newValue > 0
+          ? this.visibleRange.maxY * (1 - this.verticalUpdateSpeed)
+          : this.visibleRange.maxY * (1 + this.verticalUpdateSpeed)
+    }
+
+    this.yZoom = (this.cameraDistance * (1 - this.percentagePadding)) / newValue
+    this.visibleRange.minY = -newValue
+    this.visibleRange.maxY = newValue
 
     this.plotLine.scale.y = this.yZoom
 

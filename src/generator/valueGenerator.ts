@@ -19,7 +19,7 @@ export class ValueGenerator {
 
   constructor(callback: (point: Vector2) => void) {
     this.generating = false
-    this.frequency = 60
+    this.frequency = 1000
     this.callback = callback
     this.period = 1
     this.multiplier = 10

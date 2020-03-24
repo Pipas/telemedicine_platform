@@ -7,7 +7,6 @@ import { WebsocketManager } from './websocketManager'
 
 let graphManager: GraphManager
 let generator: ValueGenerator
-let websocketManager: WebsocketManager
 
 let stats: Stats
 
@@ -57,7 +56,7 @@ function initStats(): void {
 }
 
 function initWebSocket(): void {
-  websocketManager = new WebsocketManager(
+  new WebsocketManager(
     () => {
       console.log('WebSocketConnected')
       initGUI()

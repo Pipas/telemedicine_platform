@@ -21,7 +21,7 @@ server.on('connection', ws => {
   const interval = setInterval(() => {
     broadcast(valueBuffer)
     valueBuffer = []
-  }, 16.666);
+  }, 16);
 })
 
 function generate() {
@@ -32,7 +32,7 @@ function generate() {
 
   generateInterval = setInterval(() => {
     valueBuffer.push(sineGenerator(initTime))
-  }, 16)
+  }, 1)
 }
 
 function sineGenerator(initTime) {

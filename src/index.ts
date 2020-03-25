@@ -5,6 +5,8 @@ import { Vector2 } from 'three'
 import * as Stats from 'stats.js'
 import { WebsocketManager } from './websocketManager'
 
+import * as localforage from 'localforage'
+
 let graphManager: GraphManager
 let generator: ValueGenerator
 
@@ -74,6 +76,11 @@ function initWebSocket(): void {
       initGUI()
     },
   )
+}
+
+window.onbeforeunload = function(): void {
+  localforage.clear()
+  return null
 }
 
 window.onload = function(): void {

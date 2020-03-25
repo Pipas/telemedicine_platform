@@ -1,10 +1,11 @@
-import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial } from 'three'
+import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial, ObjectLoader } from 'three'
 import { GraphLine } from './graphLine'
 
 export class Chunk {
+  static loader = new ObjectLoader()
   static material = new LineBasicMaterial({ color: 0x0000ff })
-  static latestId = -1
-  static maxPoints = 1000
+  static _id = 0
+  static maxPoints = 500
   id: number
 
   firstValue: number
@@ -12,9 +13,13 @@ export class Chunk {
 
   line: LineSegments
 
-  constructor() {
-    this.id = Chunk.latestId++
-    this.line = this.createLineSegment()
+  constructor(encoded: string = null) {
+    if (encoded != null) {
+      this.fromBase64(encoded)
+    } else {
+      this.id = Chunk._id++
+      this.line = this.createLineSegment()
+    }
   }
 
   createLineSegment(): LineSegments {
@@ -50,5 +55,24 @@ export class Chunk {
     const range = (this.line.geometry as BufferGeometry).drawRange.count
 
     return range / 6 == Chunk.maxPoints
+  }
+
+  toBase64(): string {
+    return window.btoa(
+      JSON.stringify({
+        id: this.id,
+        firstValue: this.firstValue,
+        lastValue: this.lastValue,
+        line: this.line.toJSON(),
+      }),
+    )
+  }
+
+  fromBase64(encoded: string): void {
+    const unencoded = JSON.parse(window.atob(encoded))
+    this.id = unencoded.id
+    this.firstValue = unencoded.firstValue
+    this.lastValue = unencoded.lastValue
+    this.line = Chunk.loader.parse(unencoded.line) as LineSegments
   }
 }

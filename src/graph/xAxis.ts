@@ -11,20 +11,52 @@ export class XAxis extends Axis {
     this.buildSteps()
   }
 
-  updateSteps(): void {
+  onMove(delta: number): void {
     const firstValue = this.steps[0].value
     const lastValue = this.steps[this.steps.length - 1].value
 
-    if (this.graph.visibleRange.maxX > lastValue + this.stepSize) {
-      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, lastValue + this.stepSize))
-    } else if (this.graph.visibleRange.maxX < lastValue) {
-      this.steps.pop().remove()
+    if (delta > 0) {
+      for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX; i += this.stepSize) {
+        this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, i))
+      }
+
+      for (let j = firstValue; j < this.graph.visibleRange.minX; j += this.stepSize) {
+        this.steps.shift().remove()
+      }
     }
 
-    if (this.graph.visibleRange.minX < firstValue - this.stepSize) {
-      this.steps.unshift(new AxisStep(this.graph, StepDirection.horizontal, firstValue - this.stepSize))
-    } else if (this.graph.visibleRange.minX > firstValue) {
-      this.steps.shift().remove()
+    if (delta < 0) {
+      for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX; i -= this.stepSize) {
+        this.steps.unshift(new AxisStep(this.graph, StepDirection.horizontal, i))
+      }
+
+      for (let j = lastValue; j > this.graph.visibleRange.maxX; j -= this.stepSize) {
+        this.steps.pop().remove()
+      }
+    }
+  }
+
+  onZoom(): void {
+    let i = this.steps.length
+    while (i--) {
+      const step = this.steps[i]
+      if (step.value > this.graph.visibleRange.minX && step.value < this.graph.visibleRange.maxX) {
+        step.position()
+      } else {
+        step.remove()
+        this.steps.splice(i, 1)
+      }
+    }
+
+    const firstValue = this.steps[0].value
+    const lastValue = this.steps[this.steps.length - 1].value
+
+    for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX; i += this.stepSize) {
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, i))
+    }
+
+    for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX; i -= this.stepSize) {
+      this.steps.unshift(new AxisStep(this.graph, StepDirection.horizontal, i))
     }
   }
 
@@ -42,10 +74,8 @@ export class XAxis extends Axis {
   }
 
   private buildSteps(): void {
-    let lastStep = Math.ceil(this.graph.visibleRange.minX) - (Math.ceil(this.graph.visibleRange.maxX) % this.stepSize)
-
-    for (lastStep; lastStep < this.graph.visibleRange.maxX; lastStep += this.stepSize) {
-      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, lastStep))
+    for (let i = 0; i < this.graph.visibleRange.maxX; i += this.stepSize) {
+      this.steps.push(new AxisStep(this.graph, StepDirection.horizontal, i))
     }
   }
 }

@@ -84,6 +84,49 @@ export class Graph {
     this.moveCamera(delta)
   }
 
+  increaseHorizontalZoom(): void {
+    this.updateHorizontalZoom(1.2)
+  }
+
+  decreaseHorizontalZoom(): void {
+    this.updateHorizontalZoom(1 / 1.2)
+  }
+
+  private getSyncPoint(): number {
+    if (this.visibleRange.minX == 0) return 0
+    if (this.cameraFollow) return this.visibleRange.maxX
+    else return this.visibleRange.minX + (this.visibleRange.maxX - this.visibleRange.minX) / 2
+  }
+
+  private updateHorizontalZoom(multiplier: number): void {
+    this.xZoom = this.xZoom * multiplier
+
+    this.plotLine.scale.x = this.xZoom
+
+    const syncPoint = this.getSyncPoint()
+
+    this.visibleRange.maxX = this.visibleRange.maxX / multiplier
+    this.visibleRange.minX = this.visibleRange.minX / multiplier
+
+    const newSyncPoint = this.getSyncPoint()
+    let delta = syncPoint - newSyncPoint
+
+    if (this.visibleRange.minX + delta < 0) {
+      delta = 0 - this.visibleRange.minX
+    }
+
+    this.camera.position.x += delta * this.xZoom
+    this.visibleRange.maxX += delta
+    this.visibleRange.minX += delta
+
+    this.xAxis.moveAxis(delta * this.xZoom)
+    this.yAxis.moveSteps(delta * this.xZoom)
+
+    this.xAxis.onZoom()
+
+    this.chunkManager.onZoom()
+  }
+
   private moveCamera(delta: number): void {
     const updatedDelta =
       this.camera.position.x + delta < this.cameraDistance * this.aspectRatio
@@ -118,7 +161,7 @@ export class Graph {
     this.visibleRange.maxX += delta / this.xZoom
     this.visibleRange.minX += delta / this.xZoom
 
-    this.xAxis.updateSteps()
+    this.xAxis.onMove(delta)
     this.xAxis.moveAxis(delta)
     this.yAxis.moveSteps(delta)
 

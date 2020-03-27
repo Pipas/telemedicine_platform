@@ -58,28 +58,40 @@ export class ChunkManager {
     }
   }
 
+  onZoom(): void {
+    while (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
+      if (!this.unshiftVisibleChunk()) break
+    }
+
+    while (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
+      if (!this.pushVisibleChunk()) break
+    }
+  }
+
   private createNewUpdatingChunk(): void {
     this.updatingChunk = new Chunk()
     this.storeChunk(this.updatingChunk)
   }
 
-  private pushVisibleChunk(): void {
+  private pushVisibleChunk(): boolean {
     const chunk = this.storedChunks.find(chunk => chunk.id == this.visibleChunks[this.visibleChunks.length - 1].id + 1)
 
-    if (chunk == null) return
+    if (chunk == null) return false
 
     this.showChunk(chunk)
     this.visibleChunks.push(chunk)
+
+    return true
   }
 
   private popVisibleChunk(): void {
     this.hideChunk(this.visibleChunks.pop())
   }
 
-  private unshiftVisibleChunk(): void {
+  private unshiftVisibleChunk(): boolean {
     const chunk = this.storedChunks.find(chunk => chunk.id == this.visibleChunks[0].id - 1)
 
-    if (chunk == null) return
+    if (chunk == null) return false
 
     this.showChunk(chunk)
     this.visibleChunks.unshift(chunk)
@@ -92,6 +104,8 @@ export class ChunkManager {
         this.storedChunks.push(new Chunk(encodedChunk))
       })
     }
+
+    return true
   }
 
   private shiftVisibleChunk(): void {
@@ -134,11 +148,9 @@ export class ChunkManager {
       if (!keys.includes(chunk.id.toString())) {
         localforage.setItem(chunk.id.toString(), chunk.toBase64()).then(() => {
           this.storedChunks = this.storedChunks.filter(stored => stored.id !== chunk.id)
-          console.log(`stored chunk ${chunk.id}`)
         })
       } else {
         this.storedChunks = this.storedChunks.filter(stored => stored.id !== chunk.id)
-        console.log(`chunk ${chunk.id} already stored`)
       }
     })
   }

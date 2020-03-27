@@ -16,12 +16,60 @@ canvas {
   border: 1px solid black;
 }
 
-#controls {
+.graph-wrapper {
+  position: relative;
+}
+
+.controls {
+  display: grid;
   position: absolute;
-  top: 20px;
-  left: 20px;
+  padding: 6px;
+  top: 0;
+  right: 0;
+  grid-template-columns: 16px 16px 16px;
+  grid-template-rows: 16px 16px 16px;
+  column-gap: 4px;
+  row-gap: 4px;
+}
+
+.controls .top {
+  grid-row-start: 1;
+}
+
+.controls .vmid {
+  grid-row-start: 2;
+}
+
+.controls .bottom {
+  grid-row-start: 3;
+}
+
+.controls .left {
+  grid-column-start: 1;
+}
+
+.controls .mid {
+  grid-column-start: 2;
+}
+
+.controls .right {
+  grid-column-start: 3;
+}
+
+.controls button {
+  height: 16px;
+  width: 16px;
+  border: 1px solid black;
   display: flex;
-  flex-direction: row;
   justify-content: center;
   align-items: center;
+  padding: 0;
+}
+
+.controls button:hover {
+  cursor: pointer;
+}
+
+.controls button:active {
+  transform: translateY(2px);
 }

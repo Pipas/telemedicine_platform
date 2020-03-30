@@ -46,13 +46,17 @@ export class YAxis extends Axis {
     return rebuildSteps
   }
 
+  private getNewStep(value: number): AxisStep {
+    return new AxisStep(this.graph, StepDirection.vertical, value, false)
+  }
+
   private buildSteps(): void {
     for (let i = this.stepSize; i < this.graph.visibleRange.maxY; i += this.stepSize) {
-      this.steps.push(new AxisStep(this.graph, StepDirection.vertical, i))
+      this.steps.push(this.getNewStep(i))
     }
 
     for (let i = -this.stepSize; i > this.graph.visibleRange.minY; i -= this.stepSize) {
-      this.steps.push(new AxisStep(this.graph, StepDirection.vertical, i))
+      this.steps.push(this.getNewStep(i))
     }
   }
 }

@@ -23,14 +23,16 @@ export class AxisStep {
 
   private graph: Graph
   private direction: StepDirection
+  private isTime: boolean
 
   public value: number
   public group: Group
 
-  constructor(graph: Graph, direction: StepDirection, value: number) {
+  constructor(graph: Graph, direction: StepDirection, value: number, isTime: boolean) {
     this.graph = graph
     this.direction = direction
     this.value = value
+    this.isTime = isTime
 
     this.group = new Group()
 
@@ -95,7 +97,7 @@ export class AxisStep {
   }
 
   private drawNumber(): void {
-    const valueDigits = this.value.toString().split('')
+    const valueDigits = this.isTime ? this.getValueAsTime().split('') : this.value.toString().split('')
 
     valueDigits.forEach((digit, i) => {
       const spriteDigit = AxisStep.digits.get(digit).clone()
@@ -109,6 +111,13 @@ export class AxisStep {
 
       this.group.add(spriteDigit)
     })
+  }
+
+  private getValueAsTime(): string {
+    const seconds = this.value < 60 ? this.value : this.value % 60
+    const minutes = this.value < 60 ? 0 : (this.value - seconds) / 60
+
+    return minutes.toString() + ':' + ('0' + seconds).slice(-2)
   }
 
   position(): void {

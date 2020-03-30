@@ -124,7 +124,8 @@ export class Graph {
 
     this.xAxis.onZoom()
 
-    this.chunkManager.onZoom()
+    if (multiplier > 1) this.chunkManager.onZoomIn()
+    else this.chunkManager.onZoomOut()
   }
 
   private moveCamera(delta: number): void {

@@ -4,10 +4,10 @@ import {
   Line,
   BufferGeometry,
   Sprite,
-  Texture,
   SpriteMaterial,
   LinearFilter,
   Group,
+  TextureLoader,
 } from 'three'
 import { Graph } from '../graph/graph'
 
@@ -20,7 +20,6 @@ export class AxisStep {
   public static material = new LineBasicMaterial({ color: 0x000000 })
   private static digits: Map<string, Sprite>
   private static digitWidth: number
-  private static fontSize = 15
 
   private graph: Graph
   private direction: StepDirection
@@ -74,35 +73,18 @@ export class AxisStep {
 
   private initDigits(): void {
     if (AxisStep.digits == null) {
-      const digits = '-0123456789.'
+      const digits = '0123456789-:,.'
 
-      const canvas = document.createElement('canvas') as HTMLCanvasElement
-      const canvasContext = canvas.getContext('2d')
-      canvasContext.font = `${AxisStep.fontSize}px 'monospace'`
-      canvasContext.fillStyle = 'black'
-
-      // Read canvas size with correct font
-      canvas.width = canvasContext.measureText(digits).width
-      canvas.height = AxisStep.fontSize
-
-      // Set font again because it's reset from reading
-      canvasContext.font = `${AxisStep.fontSize}px 'monospace'`
-
-      canvasContext.fillText(digits, 0, AxisStep.fontSize)
-
-      // canvas contents will be used for a texture
       AxisStep.digits = new Map<string, Sprite>()
-      AxisStep.digitWidth = canvas.width / digits.length / AxisStep.fontSize
+      AxisStep.digitWidth = 11 / 16
 
       for (let i = 0; i < digits.length; i++) {
-        const texture = new Texture(canvas)
+        const texture = new TextureLoader().load('images/digits.png')
         texture.minFilter = LinearFilter
-
-        texture.needsUpdate = true
 
         texture.repeat.x = 1 / digits.length
 
-        texture.offset.x = (i * (canvas.width / digits.length)) / canvas.width
+        texture.offset.x = (i * (154 / digits.length)) / 154
 
         const sprite = new Sprite(new SpriteMaterial({ map: texture }))
         sprite.scale.set(AxisStep.digitWidth, 1, 1)

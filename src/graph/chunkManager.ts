@@ -26,8 +26,6 @@ export class ChunkManager {
     this.createNewUpdatingChunk()
     this.showChunk(this.updatingChunk)
     this.visibleChunks.push(this.updatingChunk)
-
-    //localforage.clear()
   }
 
   addNewPoint(point: Vector2): void {
@@ -58,13 +56,23 @@ export class ChunkManager {
     }
   }
 
-  onZoom(): void {
+  onZoomOut(): void {
     while (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
       if (!this.unshiftVisibleChunk()) break
     }
 
     while (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
       if (!this.pushVisibleChunk()) break
+    }
+  }
+
+  onZoomIn(): void {
+    while (this.visibleChunks[0].lastValue < this.graph.visibleRange.minX) {
+      this.shiftVisibleChunk()
+    }
+
+    while (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
+      this.popVisibleChunk()
     }
   }
 

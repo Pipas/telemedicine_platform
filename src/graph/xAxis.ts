@@ -110,7 +110,7 @@ export class XAxis extends Axis {
   }
 
   private buildAxis(): void {
-    const geometry = new BufferGeometry().setFromPoints([new Vector3(0, 0, 0), new Vector3(1, 0, 0)])
+    const geometry = new BufferGeometry().setFromPoints([new Vector3(-0.1, 0, 0), new Vector3(1.1, 0, 0)])
 
     this.axis = new Line(geometry, Axis.material)
 

@@ -32,9 +32,8 @@ function render(): void {
 }
 
 function initGUI(): void {
-  const gui = new dat.GUI()
-
   if (generator != null) {
+    const gui = new dat.GUI()
     gui
       .add(generator, 'type', [
         GeneratorType.SineGenerator,
@@ -47,8 +46,6 @@ function initGUI(): void {
     gui.add(generator, 'multiplier')
     gui.add(generator, 'toggle')
   }
-
-  gui.add(graphManager, 'followLiveValue')
 }
 
 function initStats(): void {

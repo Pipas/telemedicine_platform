@@ -36,9 +36,16 @@ export class ChunkManager {
       this.createNewUpdatingChunk()
       this.checkChunkChange(1)
     }
+
+    if (this.visibleChunks.length == 0) this.updateEmptyVisibleChunks()
   }
 
   checkChunkChange(delta: number): void {
+    if (this.visibleChunks.length == 0) {
+      this.updateEmptyVisibleChunks()
+      return
+    }
+
     if (delta > 0) {
       if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
         this.pushVisibleChunk()
@@ -53,6 +60,13 @@ export class ChunkManager {
       if (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
         this.unshiftVisibleChunk()
       }
+    }
+  }
+
+  private updateEmptyVisibleChunks(): void {
+    if (this.updatingChunk.lastValue > this.graph.visibleRange.minX) {
+      this.showChunk(this.updatingChunk)
+      this.visibleChunks.push(this.updatingChunk)
     }
   }
 
@@ -118,6 +132,8 @@ export class ChunkManager {
 
   private shiftVisibleChunk(): void {
     this.hideChunk(this.visibleChunks.shift())
+
+    if (this.visibleChunks.length == 0) return
 
     const lowestStoredChunk = this.getLowestStoredChunk()
     if (this.visibleChunks[0].id - lowestStoredChunk.id > ChunkManager.chunkPadding) {

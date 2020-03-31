@@ -3,6 +3,7 @@ import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
 import { VisibleRange } from '../models/visibleRange'
 import { ChunkManager } from './chunkManager'
+import { GraphControls } from '../graphControls'
 
 export class Graph {
   private cameraDistance = 10
@@ -13,7 +14,10 @@ export class Graph {
   camera: Camera
 
   cameraFollow = true
+  autoUpdateVerticalRange = true
   aspectRatio: number
+
+  private controls: GraphControls
 
   visibleRange: VisibleRange
   xZoom: number
@@ -29,10 +33,10 @@ export class Graph {
 
   pointBuffer: Vector2[]
 
-  constructor(scene: Scene, camera: Camera, aspectRatio: number) {
+  constructor(scene: Scene, camera: Camera, canvas: HTMLCanvasElement) {
     this.scene = scene
     this.camera = camera
-    this.aspectRatio = aspectRatio
+    this.aspectRatio = canvas.offsetWidth / canvas.offsetHeight
 
     this.xZoom = 10
     this.yZoom = 1
@@ -41,6 +45,8 @@ export class Graph {
 
     this.setupCamera()
     this.setupPlotLine()
+
+    this.controls = new GraphControls(this, canvas)
   }
 
   init(): void {
@@ -74,12 +80,20 @@ export class Graph {
     )
   }
 
-  setCameraToLiveValue(): void {
-    this.cameraFollow = true
+  setCameraFollow(follow: boolean): void {
+    this.cameraFollow = follow
+
+    this.controls.setFollowLineButtonVisability(!follow)
+  }
+
+  setAutoUpdateVerticalRange(update: boolean): void {
+    this.autoUpdateVerticalRange = update
+
+    this.controls.setUpdateVerticalRangeButtonVisability(!update)
   }
 
   dragCamera(delta: number): void {
-    this.cameraFollow = false
+    this.setCameraFollow(false)
 
     this.moveCamera(delta)
   }
@@ -90,6 +104,14 @@ export class Graph {
 
   decreaseHorizontalZoom(): void {
     this.updateHorizontalZoom(1 / 1.2)
+  }
+
+  increaseVerticalZoom(): void {
+    this.updateVerticalZoom(1.2)
+  }
+
+  decreaseVerticalZoom(): void {
+    this.updateVerticalZoom(1 / 1.2)
   }
 
   private getSyncPoint(): number {
@@ -126,6 +148,19 @@ export class Graph {
 
     if (multiplier > 1) this.chunkManager.onZoomIn()
     else this.chunkManager.onZoomOut()
+  }
+
+  private updateVerticalZoom(multiplier: number): void {
+    this.setAutoUpdateVerticalRange(false)
+
+    this.yZoom = this.yZoom * multiplier
+
+    this.plotLine.scale.y = this.yZoom
+
+    this.visibleRange.maxY = this.visibleRange.maxY / multiplier
+    this.visibleRange.minY = this.visibleRange.minY / multiplier
+
+    this.yAxis.rebuildSteps()
   }
 
   private moveCamera(delta: number): void {
@@ -170,6 +205,8 @@ export class Graph {
   }
 
   private updateVerticalRange(value: number): void {
+    if (!this.autoUpdateVerticalRange) return
+
     let newValue = Math.abs(value)
 
     if (Math.abs(this.visibleRange.maxY - newValue) > this.visibleRange.maxY * this.verticalUpdateSpeed) {

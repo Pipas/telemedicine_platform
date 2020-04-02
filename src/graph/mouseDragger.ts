@@ -62,8 +62,6 @@ export class MouseDragger extends EventDispatcher {
 
     const position = new Vector2(event.clientX - rect.left, event.clientY - rect.top)
 
-    // console.log(position)
-
     return position
   }
 }

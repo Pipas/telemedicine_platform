@@ -10,7 +10,14 @@ body {
   height: 100%;
 }
 
-canvas {
+#webGL-canvas {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.graph {
   height: 256px;
   width: calc(100vw - 48px);
   border: 1px solid black;

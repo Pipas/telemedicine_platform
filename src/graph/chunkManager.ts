@@ -8,16 +8,14 @@ export class ChunkManager {
   static chunkPadding = 3
 
   graph: Graph
-  chunkWidth: number
   visibleChunks: Chunk[]
   storedChunks: Chunk[]
 
   lastPoint: Vector2
   updatingChunk: Chunk
 
-  constructor(graph: Graph, width: number) {
+  constructor(graph: Graph) {
     this.graph = graph
-    this.chunkWidth = width
     this.lastPoint = new Vector2(0, 0)
     this.visibleChunks = []
 
@@ -28,7 +26,7 @@ export class ChunkManager {
     this.visibleChunks.push(this.updatingChunk)
   }
 
-  addNewPoint(point: Vector2): void {
+  addPoint(point: Vector2): void {
     this.updatingChunk.add(this.lastPoint, point)
     this.lastPoint = point
 

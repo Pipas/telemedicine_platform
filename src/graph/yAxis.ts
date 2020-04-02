@@ -12,7 +12,7 @@ export class YAxis extends Axis {
     this.buildSteps()
   }
 
-  rebuildSteps(): void {
+  updateScale(): void {
     if (this.calculateNewStep()) {
       while (this.steps.length > 0) {
         this.steps.pop().remove()
@@ -27,7 +27,7 @@ export class YAxis extends Axis {
 
   moveSteps(delta: number): void {
     this.steps.forEach(step => {
-      step.group.position.x += delta
+      step.group.position.x += delta * this.graph.xZoom
     })
   }
 

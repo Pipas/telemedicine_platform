@@ -1,15 +1,15 @@
-import { Graph } from './graph/graph'
+import { Graph } from './graph'
 
 export class GraphControls {
   private graph: Graph
-  private canvas: HTMLCanvasElement
+  private element: HTMLDivElement
   private controlDiv: HTMLDivElement
 
   private followLine: HTMLButtonElement
   private updateVerticalRange: HTMLButtonElement
 
-  constructor(graph: Graph, canvas: HTMLCanvasElement) {
-    this.canvas = canvas
+  constructor(graph: Graph, element: HTMLDivElement) {
+    this.element = element
     this.graph = graph
     this.initControls()
   }
@@ -17,7 +17,7 @@ export class GraphControls {
   private initControls(): void {
     this.controlDiv = document.createElement('div')
     this.controlDiv.setAttribute('class', 'controls')
-    this.canvas.parentElement.appendChild(this.controlDiv)
+    this.element.parentElement.appendChild(this.controlDiv)
 
     this.addXPositiveZoomButton()
     this.addXNegativeZoomButton()
@@ -54,7 +54,7 @@ export class GraphControls {
     this.followLine.style.display = 'none'
 
     this.followLine.addEventListener('click', () => {
-      this.graph.setCameraFollow(true)
+      this.graph.setAutoMoveHorizontalRange(true)
     })
   }
 

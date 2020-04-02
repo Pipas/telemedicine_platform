@@ -81,12 +81,10 @@ window.onbeforeunload = function(): void {
 }
 
 window.onload = function(): void {
-  const canvas = document.getElementById('canvas') as HTMLCanvasElement
-
-  graphManager = new GraphManager(canvas)
+  localforage.clear()
+  graphManager = new GraphManager()
 
   bindEventListeners()
-  graphManager.initGraph()
 
   initWebSocket()
 

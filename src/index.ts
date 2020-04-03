@@ -1,14 +1,13 @@
 import { GraphManager } from './graphManager'
-import { ValueGenerator, GeneratorType } from './generator/valueGenerator'
-import * as dat from 'dat.gui'
 import { Vector2 } from 'three'
 import * as Stats from 'stats.js'
 import { WebsocketManager } from './websocketManager'
 
 import * as localforage from 'localforage'
+import { GeneratorManager } from './generator/generatorManager'
 
 let graphManager: GraphManager
-let generator: ValueGenerator
+let generator: GeneratorManager
 
 let stats: Stats
 
@@ -31,24 +30,6 @@ function render(): void {
   requestAnimationFrame(render)
 }
 
-function initGUI(): void {
-  if (generator != null) {
-    const gui = new dat.GUI()
-    gui
-      .add(generator, 'type', [
-        GeneratorType.SineGenerator,
-        GeneratorType.SquareGenerator,
-        GeneratorType.LinearGenerator,
-      ])
-      .onChange(() => generator.updateGeneratingFunction())
-    gui.add(generator, 'frequency', 1, 1000).onChange(() => generator.start())
-    gui.add(generator, 'period')
-    gui.add(generator, 'multiplier')
-    gui.add(generator, 'toggle')
-    gui.close()
-  }
-}
-
 function initStats(): void {
   stats = new Stats()
   stats.showPanel(0)
@@ -59,7 +40,6 @@ function initWebSocket(): void {
   new WebsocketManager(
     () => {
       console.log('WebSocketConnected')
-      initGUI()
     },
     (data: string) => {
       const points = JSON.parse(data)
@@ -69,9 +49,8 @@ function initWebSocket(): void {
     },
     () => {
       console.log('error')
-      generator = new ValueGenerator(generatorCallback)
+      generator = new GeneratorManager(generatorCallback)
       generator.start()
-      initGUI()
     },
   )
 }

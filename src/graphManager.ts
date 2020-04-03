@@ -30,9 +30,10 @@ export class GraphManager {
   }
 
   addPoints(points: Vector2[]): void {
-    this.graphs.forEach((graph, index) => {
-      graph.addPoint(points[index % points.length])
-    })
+    console.log(points)
+    // this.graphs.forEach((graph, index) => {
+    //   graph.addPoint(points[0])
+    // })
   }
 
   update(): void {

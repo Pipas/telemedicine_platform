@@ -17,7 +17,7 @@ export class GraphControls {
   private initControls(): void {
     this.controlDiv = document.createElement('div')
     this.controlDiv.setAttribute('class', 'controls')
-    this.element.parentElement.appendChild(this.controlDiv)
+    this.element.appendChild(this.controlDiv)
 
     this.addXPositiveZoomButton()
     this.addXNegativeZoomButton()

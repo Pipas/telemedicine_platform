@@ -4,7 +4,6 @@ import { GraphLine } from './graphLine'
 export class Chunk {
   static loader = new ObjectLoader()
   static material = new LineBasicMaterial({ color: 0x0000ff })
-  static _id = 0
   static maxPoints = 500
   id: number
 
@@ -13,11 +12,11 @@ export class Chunk {
 
   line: LineSegments
 
-  constructor(encoded: string = null) {
+  constructor(id: number, encoded: string = null) {
     if (encoded != null) {
       this.fromBase64(encoded)
     } else {
-      this.id = Chunk._id++
+      this.id = id
       this.line = this.createLineSegment()
     }
   }

@@ -18,13 +18,11 @@ body {
 }
 
 .graph {
+  position: relative;
   height: 256px;
   width: calc(100vw - 48px);
   border: 1px solid black;
-}
-
-.graph-wrapper {
-  position: relative;
+  margin-bottom: 32px;
 }
 
 .controls {

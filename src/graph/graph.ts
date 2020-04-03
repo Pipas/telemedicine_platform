@@ -12,6 +12,10 @@ export class Graph {
   private static percentagePadding = 0.1
   private static verticalUpdateSpeed = 0.05
 
+  // Graph IDs
+  private static _id = 0
+  id: number
+
   // Graph elements
   scene: Scene
   element: HTMLDivElement
@@ -39,6 +43,7 @@ export class Graph {
 
   constructor(element: HTMLDivElement) {
     this.element = element
+    this.id = Graph._id++
 
     this.initScene()
     this.initCamera()
@@ -86,6 +91,16 @@ export class Graph {
 
     // Empties point buffer for next render
     this.emptyPointBuffer()
+  }
+
+  /**
+   * Adds a point to the graph point buffer
+   *
+   * @param {Vector2} point
+   * @memberof Graph
+   */
+  addPoint(point: Vector2): void {
+    this.pointBuffer.push(point)
   }
 
   /**
@@ -348,16 +363,6 @@ export class Graph {
       // Updates vertical scale
       this.yAxis.updateScale()
     }
-  }
-
-  /**
-   * Adds a point to the graph point buffer
-   *
-   * @param {Vector2} point
-   * @memberof Graph
-   */
-  addPoint(point: Vector2): void {
-    this.pointBuffer.push(point)
   }
 
   /**

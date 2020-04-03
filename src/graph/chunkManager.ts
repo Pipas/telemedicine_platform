@@ -5,7 +5,7 @@ import { Graph } from './graph'
 import * as localforage from 'localforage'
 
 export class ChunkManager {
-  static chunkPadding = 3
+  private static chunkPadding = 3
 
   graph: Graph
   visibleChunks: Chunk[]
@@ -13,6 +13,7 @@ export class ChunkManager {
 
   lastPoint: Vector2
   updatingChunk: Chunk
+  chunkIdAccumulator = 0
 
   constructor(graph: Graph) {
     this.graph = graph
@@ -89,7 +90,7 @@ export class ChunkManager {
   }
 
   private createNewUpdatingChunk(): void {
-    this.updatingChunk = new Chunk()
+    this.updatingChunk = new Chunk(this.chunkIdAccumulator++)
     this.storeChunk(this.updatingChunk)
   }
 
@@ -119,9 +120,9 @@ export class ChunkManager {
     const lowestStoredChunk = this.getLowestStoredChunk()
 
     if (this.visibleChunks[0].id - lowestStoredChunk.id < ChunkManager.chunkPadding) {
-      localforage.getItem((lowestStoredChunk.id - 1).toString()).then((encodedChunk: string) => {
+      localforage.getItem(`${this.graph.id}-${lowestStoredChunk.id - 1}`).then((encodedChunk: string) => {
         if (encodedChunk == null) return
-        this.storedChunks.push(new Chunk(encodedChunk))
+        this.storedChunks.push(new Chunk(0, encodedChunk))
       })
     }
 
@@ -167,8 +168,8 @@ export class ChunkManager {
 
   private storeChunkLocally(chunk: Chunk): void {
     localforage.keys().then((keys: string[]) => {
-      if (!keys.includes(chunk.id.toString())) {
-        localforage.setItem(chunk.id.toString(), chunk.toBase64()).then(() => {
+      if (!keys.includes(`${this.graph.id}-${chunk.id}`)) {
+        localforage.setItem(`${this.graph.id}-${chunk.id}`, chunk.toBase64()).then(() => {
           this.storedChunks = this.storedChunks.filter(stored => stored.id !== chunk.id)
         })
       } else {

@@ -4,8 +4,8 @@ import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
 
 export class XAxis extends Axis {
-  private stepPossibilities = [1, 2, 5, 10, 30, 60]
-  private windowPadding = 2
+  private static stepPossibilities = [1, 2, 5, 10, 30, 60]
+  private static windowPadding = 2
 
   constructor(graph: Graph) {
     super(graph)
@@ -17,11 +17,11 @@ export class XAxis extends Axis {
   moveScale(delta: number): void {
     const firstValue = this.steps[0].value
     const lastValue = this.steps[this.steps.length - 1].value
-    const padding = this.windowPadding / this.graph.xZoom
+    const padding = XAxis.windowPadding / this.graph.xZoom
 
     if (delta > 0) {
       for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX + padding; i += this.stepSize) {
-        this.steps.push(this.getNewStep(i))
+        this.steps.push(this.getStep(i))
       }
 
       for (let j = firstValue; j < this.graph.visibleRange.minX - padding; j += this.stepSize) {
@@ -31,7 +31,8 @@ export class XAxis extends Axis {
 
     if (delta < 0) {
       for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX - padding; i -= this.stepSize) {
-        this.steps.unshift(this.getNewStep(i))
+        if(i == 0) continue
+        this.steps.unshift(this.getStep(i))
       }
 
       for (let j = lastValue; j > this.graph.visibleRange.maxX + padding; j -= this.stepSize) {
@@ -60,13 +61,17 @@ export class XAxis extends Axis {
       const lastValue = this.steps[this.steps.length - 1].value
 
       for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX; i += this.stepSize) {
-        this.steps.push(this.getNewStep(i))
+        this.steps.push(this.getStep(i))
       }
 
       for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX; i -= this.stepSize) {
-        this.steps.unshift(this.getNewStep(i))
+        this.steps.unshift(this.getStep(i))
       }
     }
+  }
+
+  moveAxis(delta: number): void {
+    this.axis.position.x += delta * this.graph.xZoom
   }
 
   private calculateNewStep(): boolean {
@@ -74,13 +79,13 @@ export class XAxis extends Axis {
       (this.stepSize * this.graph.element.offsetWidth) / (this.graph.visibleRange.maxX - this.graph.visibleRange.minX)
 
     if (stepWidth < 50) {
-      const nextStep = this.stepPossibilities[this.stepPossibilities.findIndex(step => step == this.stepSize) + 1]
+      const nextStep = XAxis.stepPossibilities[XAxis.stepPossibilities.findIndex(step => step == this.stepSize) + 1]
       if (nextStep == undefined) return false
       this.stepSize = nextStep
 
       return true
     } else if (stepWidth > 100) {
-      const nextStep = this.stepPossibilities[this.stepPossibilities.findIndex(step => step == this.stepSize) - 1]
+      const nextStep = XAxis.stepPossibilities[XAxis.stepPossibilities.findIndex(step => step == this.stepSize) - 1]
       if (nextStep == undefined) return false
       this.stepSize = nextStep
 
@@ -88,10 +93,6 @@ export class XAxis extends Axis {
     }
 
     return false
-  }
-
-  moveAxis(delta: number): void {
-    this.axis.position.x += delta * this.graph.xZoom
   }
 
   private buildAxis(): void {
@@ -108,20 +109,22 @@ export class XAxis extends Axis {
 
   private buildSteps(): void {
     for (let i = this.getInitialStep(); i < this.graph.visibleRange.maxX; i += this.stepSize) {
-      this.steps.push(this.getNewStep(i))
+      this.steps.push(this.getStep(i))
     }
   }
 
-  private getNewStep(value: number): AxisStep {
+  private getStep(value: number): AxisStep {
     return new AxisStep(this.graph, StepDirection.horizontal, value, true)
   }
 
   private getInitialStep(): number {
+    let initialStep
     const roundMin = Math.ceil(this.graph.visibleRange.minX)
     const remaninder = roundMin % this.stepSize
 
-    if (remaninder == 0) return roundMin
+    if (remaninder == 0) initialStep = roundMin
+    else initialStep = roundMin + this.stepSize - remaninder
 
-    return roundMin + this.stepSize - remaninder
+    return initialStep ? initialStep : this.stepSize
   }
 }

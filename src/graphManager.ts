@@ -24,15 +24,22 @@ export class GraphManager {
   private buildRender(): void {
     this.renderer = new WebGLRenderer({ canvas: this.canvas })
     const DPR = window.devicePixelRatio ? window.devicePixelRatio : 1
+    this.renderer.setClearColor(0xffffff, 1)
     this.renderer.setPixelRatio(DPR)
     this.renderer.setSize(this.canvas.offsetWidth, this.canvas.offsetHeight)
   }
 
-  addPoint(point: Vector2): void {
-    this.graphs[0].addPoint(point)
+  addPoints(points: Vector2[]): void {
+    this.graphs.forEach((graph, index) => {
+      graph.addPoint(points[index % points.length])
+    })
   }
 
   update(): void {
+    this.renderer.setScissorTest(false)
+    this.renderer.clear()
+    this.renderer.setScissorTest(true)
+
     this.graphs.forEach(graph => {
       graph.render(this.renderer)
     })

@@ -12,7 +12,7 @@ let generator: ValueGenerator
 
 let stats: Stats
 
-const generatorCallback = (point: Vector2): void => graphManager.addPoint(point)
+const generatorCallback = (points: Vector2[]): void => graphManager.addPoints(points)
 
 function resizeCanvas(): void {
   graphManager.onWindowResize()
@@ -45,6 +45,7 @@ function initGUI(): void {
     gui.add(generator, 'period')
     gui.add(generator, 'multiplier')
     gui.add(generator, 'toggle')
+    gui.close()
   }
 }
 
@@ -63,7 +64,7 @@ function initWebSocket(): void {
     (data: string) => {
       const points = JSON.parse(data)
       points.forEach((point: { x: number; y: number }) => {
-        graphManager.addPoint(new Vector2(point.x, point.y))
+        graphManager.addPoints([new Vector2(point.x, point.y)])
       })
     },
     () => {

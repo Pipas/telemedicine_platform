@@ -47,6 +47,10 @@ export class MouseDragger extends EventDispatcher {
   }
 
   private mouseInElement(event: MouseEvent): boolean {
+    const target = event.target || event.srcElement
+
+    if (target != this.element) return false
+
     const rect = this.element.getBoundingClientRect()
 
     return !(

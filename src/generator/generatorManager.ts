@@ -1,44 +1,58 @@
-import { ValueGenerator } from './valueGenerator'
+import { ValueGenerator, GeneratorType } from './valueGenerator'
 import { Vector2 } from 'three'
 import * as dat from 'dat.gui'
+import { GraphManager } from '../graphManager'
 
 export class GeneratorManager {
   private gui: dat.GUI
 
   private generators: ValueGenerator[]
+  private graphManager: GraphManager
 
   private interval: NodeJS.Timeout
   private callback: (points: Vector2[]) => void
   private initTime: number
 
   private generating = false
-  private frequency = 1
+  private frequency = 60
 
-  constructor(callback: (points: Vector2[]) => void) {
+  constructor(callback: (points: Vector2[]) => void, graphManager: GraphManager) {
     this.callback = callback
+    this.graphManager = graphManager
 
-    this.generators = [
-      new ValueGenerator(),
-      new ValueGenerator(),
-    ]
+    this.generators = []
 
     this.initGUI()
+    this.createGenerator()
   }
 
   private initGUI(): void {
     this.gui = new dat.GUI()
-    // this.gui
-    // .add(generator, 'type', [
-    //   GeneratorType.SineGenerator,
-    //   GeneratorType.SquareGenerator,
-    //   GeneratorType.LinearGenerator,
-    // ])
-    // .onChange(() => generator.updateGeneratingFunction())
     this.gui.add(this, 'frequency', 1, 1000).onChange(() => this.start())
-    // this.gui.add(generator, 'period')
-    // this.gui.add(generator, 'multiplier')
     this.gui.add(this, 'toggle')
+    this.gui.add(this, 'addGraph')
     this.gui.close()
+  }
+
+  addGraph(): void {
+    this.createGenerator()
+    this.graphManager.addGraph()
+  }
+
+  private createGenerator(): void {
+    const newGenerator = new ValueGenerator()
+    const controlsFolder = this.gui.addFolder(`Graph ${newGenerator.id}`)
+    controlsFolder
+      .add(newGenerator, 'type', [
+        GeneratorType.SineGenerator,
+        GeneratorType.SquareGenerator,
+        GeneratorType.LinearGenerator,
+      ])
+      .onChange(() => newGenerator.updateGeneratingFunction())
+    controlsFolder.add(newGenerator, 'period')
+    controlsFolder.add(newGenerator, 'multiplier')
+
+    this.generators.push(newGenerator)
   }
 
   start(): void {
@@ -65,7 +79,7 @@ export class GeneratorManager {
   }
 
   generate(): Vector2[] {
-    const time = Date.now() - this.initTime / 1000
+    const time = (Date.now() - this.initTime) / 1000
     return this.generators.map(generator => generator.generate(time))
   }
 }

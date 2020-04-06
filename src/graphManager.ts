@@ -21,22 +21,43 @@ export class GraphManager {
     })
   }
 
+  addGraph(): void {
+    const graphs = document.querySelector('.graphs')
+    const newGraph = document.createElement('div')
+    newGraph.setAttribute('class', 'graph')
+    graphs.appendChild(newGraph)
+
+    this.graphs.push(new Graph(newGraph))
+  }
+
   private buildRender(): void {
     this.renderer = new WebGLRenderer({ canvas: this.canvas })
     const DPR = window.devicePixelRatio ? window.devicePixelRatio : 1
     this.renderer.setClearColor(0xffffff, 1)
     this.renderer.setPixelRatio(DPR)
-    this.renderer.setSize(this.canvas.offsetWidth, this.canvas.offsetHeight)
+    this.renderer.setSize(this.canvas.offsetWidth, this.canvas.offsetHeight, false)
   }
 
   addPoints(points: Vector2[]): void {
-    console.log(points)
-    // this.graphs.forEach((graph, index) => {
-    //   graph.addPoint(points[0])
-    // })
+    this.graphs.forEach((graph, index) => {
+      graph.addPoint(points[index])
+    })
+  }
+
+  canvasHasUpdated(): void {
+    const width = this.canvas.clientWidth
+    const height = this.canvas.clientHeight
+
+    if (this.canvas.width !== width || this.canvas.height !== height) {
+      this.renderer.setSize(width, height, false)
+    }
   }
 
   update(): void {
+    this.canvasHasUpdated()
+
+    this.canvas.style.transform = `translateY(${window.scrollY}px)`
+
     this.renderer.setScissorTest(false)
     this.renderer.clear()
     this.renderer.setScissorTest(true)
@@ -44,14 +65,5 @@ export class GraphManager {
     this.graphs.forEach(graph => {
       graph.render(this.renderer)
     })
-  }
-
-  onWindowResize(): void {
-    // const { offsetWidth, offsetHeight } = canvas
-    // screenDimensions.width = offsetWidth
-    // screenDimensions.height = offsetHeight
-    // camera.aspect = offsetWidth / offsetHeight
-    // camera.updateProjectionMatrix()
-    // renderer.setSize(offsetWidth, offsetHeight)
   }
 }

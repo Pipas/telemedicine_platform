@@ -1,4 +1,4 @@
-import { Line, Vector3, BufferGeometry } from 'three'
+import { Line, Vector3, BufferGeometry, BufferAttribute } from 'three'
 import { Graph } from '../graph/graph'
 import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
@@ -15,27 +15,34 @@ export class XAxis extends Axis {
   }
 
   moveScale(delta: number): void {
-    const firstValue = this.steps[0].value
-    const lastValue = this.steps[this.steps.length - 1].value
+    const firstStep = this.steps[0].value
+    const lastStep = this.steps[this.steps.length - 1].value
     const padding = XAxis.windowPadding / this.graph.xZoom
+    const newFirstStep = this.getClosestStep(this.graph.visibleRange.minX - padding)
+    const newLastStep = this.getClosestStep(this.graph.visibleRange.maxX + padding)
+
+    if (newFirstStep > lastStep || newLastStep < firstStep) {
+      this.rebuildSteps()
+      return
+    }
 
     if (delta > 0) {
-      for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX + padding; i += this.stepSize) {
+      for (let i = lastStep + this.stepSize; i < this.graph.visibleRange.maxX + padding; i += this.stepSize) {
         this.steps.push(this.getStep(i))
       }
 
-      for (let j = firstValue; j < this.graph.visibleRange.minX - padding; j += this.stepSize) {
+      for (let j = firstStep; j < this.graph.visibleRange.minX - padding; j += this.stepSize) {
         this.steps.shift().remove()
       }
     }
 
     if (delta < 0) {
-      for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX - padding; i -= this.stepSize) {
-        if(i == 0) continue
+      for (let i = firstStep - this.stepSize; i > this.graph.visibleRange.minX - padding; i -= this.stepSize) {
+        if (i == 0) break
         this.steps.unshift(this.getStep(i))
       }
 
-      for (let j = lastValue; j > this.graph.visibleRange.maxX + padding; j -= this.stepSize) {
+      for (let j = lastStep; j > this.graph.visibleRange.maxX + padding; j -= this.stepSize) {
         this.steps.pop().remove()
       }
     }
@@ -43,8 +50,7 @@ export class XAxis extends Axis {
 
   updateScale(): void {
     if (this.calculateNewStep()) {
-      this.steps.forEach(step => step.remove())
-      this.buildSteps()
+      this.rebuildSteps()
     } else {
       let i = this.steps.length
       while (i--) {
@@ -59,12 +65,13 @@ export class XAxis extends Axis {
 
       const firstValue = this.steps[0].value
       const lastValue = this.steps[this.steps.length - 1].value
+      const padding = XAxis.windowPadding / this.graph.xZoom
 
-      for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX; i += this.stepSize) {
+      for (let i = lastValue + this.stepSize; i < this.graph.visibleRange.maxX + padding; i += this.stepSize) {
         this.steps.push(this.getStep(i))
       }
 
-      for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX; i -= this.stepSize) {
+      for (let i = firstValue - this.stepSize; i > this.graph.visibleRange.minX - padding; i -= this.stepSize) {
         this.steps.unshift(this.getStep(i))
       }
     }
@@ -72,6 +79,14 @@ export class XAxis extends Axis {
 
   moveAxis(delta: number): void {
     this.axis.position.x += delta * this.graph.xZoom
+  }
+
+  updateAxisSize(): void {
+    const axisGeometry = this.axis.geometry as BufferGeometry
+    const positions = axisGeometry.attributes.position as BufferAttribute
+
+    positions.setX(1, this.graph.visibleRange.maxX)
+    positions.needsUpdate = true
   }
 
   private calculateNewStep(): boolean {
@@ -107,8 +122,19 @@ export class XAxis extends Axis {
     this.graph.scene.add(this.axis)
   }
 
+  private rebuildSteps(): void {
+    while (this.steps.length > 0) {
+      this.steps.pop().remove()
+    }
+    this.buildSteps()
+  }
+
   private buildSteps(): void {
-    for (let i = this.getInitialStep(); i < this.graph.visibleRange.maxX; i += this.stepSize) {
+    for (
+      let i = this.getClosestStep(this.graph.visibleRange.minX);
+      i < this.graph.visibleRange.maxX;
+      i += this.stepSize
+    ) {
       this.steps.push(this.getStep(i))
     }
   }
@@ -117,9 +143,9 @@ export class XAxis extends Axis {
     return new AxisStep(this.graph, StepDirection.horizontal, value, true)
   }
 
-  private getInitialStep(): number {
+  private getClosestStep(value: number): number {
     let initialStep
-    const roundMin = Math.ceil(this.graph.visibleRange.minX)
+    const roundMin = Math.ceil(value)
     const remaninder = roundMin % this.stepSize
 
     if (remaninder == 0) initialStep = roundMin

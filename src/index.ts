@@ -13,16 +13,6 @@ let stats: Stats
 
 const generatorCallback = (points: Vector2[]): void => graphManager.addPoints(points)
 
-function resizeCanvas(): void {
-  graphManager.onWindowResize()
-}
-
-function bindEventListeners(): void {
-  window.onresize = resizeCanvas
-
-  resizeCanvas()
-}
-
 function render(): void {
   stats.begin()
   graphManager.update()
@@ -49,7 +39,7 @@ function initWebSocket(): void {
     },
     () => {
       console.log('error')
-      generator = new GeneratorManager(generatorCallback)
+      generator = new GeneratorManager(generatorCallback, graphManager)
       generator.start()
     },
   )
@@ -63,8 +53,6 @@ window.onbeforeunload = function(): void {
 window.onload = function(): void {
   localforage.clear()
   graphManager = new GraphManager()
-
-  bindEventListeners()
 
   initWebSocket()
 

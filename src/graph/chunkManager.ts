@@ -17,7 +17,6 @@ export class ChunkManager {
 
   constructor(graph: Graph) {
     this.graph = graph
-    this.lastPoint = new Vector2(0, 0)
     this.visibleChunks = []
 
     this.storedChunks = []
@@ -28,6 +27,11 @@ export class ChunkManager {
   }
 
   addPoint(point: Vector2): void {
+    if (this.lastPoint == null) {
+      this.lastPoint = point
+      return
+    }
+
     this.updatingChunk.add(this.lastPoint, point)
     this.lastPoint = point
 
@@ -53,11 +57,11 @@ export class ChunkManager {
         this.shiftVisibleChunk()
       }
     } else {
-      if (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
-        this.popVisibleChunk()
-      }
       if (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
         this.unshiftVisibleChunk()
+      }
+      if (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
+        this.popVisibleChunk()
       }
     }
   }

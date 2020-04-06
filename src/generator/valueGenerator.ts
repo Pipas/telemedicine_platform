@@ -7,12 +7,15 @@ export enum GeneratorType {
 }
 
 export class ValueGenerator {
+  private static _id = 1
   private generatingFunction: (time: number) => Vector2
+  public id: number
   public type = GeneratorType.SineGenerator
   public period = 1
   public multiplier = 10
 
   constructor() {
+    this.id = ValueGenerator._id++
     this.updateGeneratingFunction()
   }
 
@@ -23,10 +26,12 @@ export class ValueGenerator {
   updateGeneratingFunction(): void {
     switch (this.type) {
       case GeneratorType.SineGenerator:
-        this.generatingFunction = (time: number): Vector2 => new Vector2(time, Math.sin((Math.PI * time) / this.period) * this.multiplier)
+        this.generatingFunction = (time: number): Vector2 =>
+          new Vector2(time, Math.sin((Math.PI * time) / this.period) * this.multiplier)
         break
       case GeneratorType.SquareGenerator:
-        this.generatingFunction = (time: number): Vector2 => new Vector2(time, Math.floor(time / this.period) % 2 ? -1 * this.multiplier : 1 * this.multiplier)
+        this.generatingFunction = (time: number): Vector2 =>
+          new Vector2(time, Math.floor(time / this.period) % 2 ? -1 * this.multiplier : 1 * this.multiplier)
         break
       case GeneratorType.LinearGenerator:
         this.generatingFunction = (time: number): Vector2 => new Vector2(time, time * this.multiplier)

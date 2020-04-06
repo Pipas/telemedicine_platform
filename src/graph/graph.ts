@@ -1,4 +1,4 @@
-import { Scene, Camera, Group, Box3, Vector2, Color, PerspectiveCamera, WebGLRenderer } from 'three'
+import { Scene, Group, Box3, Vector2, Color, PerspectiveCamera, WebGLRenderer } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
 import { VisibleRange } from '../models/visibleRange'
@@ -19,7 +19,7 @@ export class Graph {
   // Graph elements
   scene: Scene
   element: HTMLDivElement
-  private camera: Camera
+  private camera: PerspectiveCamera
   private controls: GraphControls
   private mouseDragger: MouseDragger
 
@@ -79,6 +79,9 @@ export class Graph {
 
     const width = rect.right - rect.left
     const height = rect.bottom - rect.top
+
+    if (width / height != this.camera.aspect) this.updateGraphSize()
+
     const left = rect.left
     const bottom = renderer.domElement.clientHeight - rect.bottom
 
@@ -216,6 +219,32 @@ export class Graph {
 
   decreaseVerticalZoom(): void {
     this.updateVerticalZoom(1 / 1.2)
+  }
+
+  /**
+   * Updates the aspect ratio of the camera and adjust scene values accordingly if element has changed size
+   *
+   * @private
+   * @memberof Graph
+   */
+  private updateGraphSize(): void {
+    // Get new aspect ratio
+    const newAspect = this.element.offsetWidth / this.element.offsetHeight
+    const ratio = newAspect / this.camera.aspect
+
+    // Calculate added delta based on the ratio of widths
+    const delta =
+      (this.visibleRange.maxX - this.visibleRange.minX) * ratio - (this.visibleRange.maxX - this.visibleRange.minX)
+    this.visibleRange.maxX += delta
+
+    // Adjust camera to new aspect and move to place
+    this.camera.aspect = newAspect
+    this.camera.updateProjectionMatrix()
+    this.camera.position.x += (delta / 2) * this.xZoom
+
+    // Updates X axis scale and line size
+    this.xAxis.updateScale()
+    this.xAxis.updateAxisSize()
   }
 
   /**

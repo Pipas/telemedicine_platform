@@ -15,6 +15,11 @@ export class XAxis extends Axis {
   }
 
   moveScale(delta: number): void {
+    if (this.steps.length == 0) {
+      this.rebuildSteps()
+      return
+    }
+
     const firstStep = this.steps[0].value
     const lastStep = this.steps[this.steps.length - 1].value
     const padding = XAxis.windowPadding / this.graph.xZoom
@@ -49,7 +54,7 @@ export class XAxis extends Axis {
   }
 
   updateScale(): void {
-    if (this.calculateNewStep()) {
+    if (this.calculateNewStep() || this.steps.length == 0) {
       this.rebuildSteps()
     } else {
       let i = this.steps.length

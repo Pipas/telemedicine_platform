@@ -22,12 +22,20 @@ export class GraphManager {
   }
 
   addGraph(): void {
+    if (this.graphs.length == 8) return
+
     const graphs = document.querySelector('.graphs')
     const newGraph = document.createElement('div')
     newGraph.setAttribute('class', 'graph')
     graphs.appendChild(newGraph)
 
     this.graphs.push(new Graph(newGraph))
+  }
+
+  deleteGraph(): void {
+    if (this.graphs.length == 1) return
+    const lastGraph = this.graphs.pop()
+    lastGraph.element.remove()
   }
 
   private buildRender(): void {

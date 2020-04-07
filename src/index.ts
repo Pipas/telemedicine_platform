@@ -27,27 +27,11 @@ function initStats(): void {
 }
 
 function initWebSocket(): void {
-  new WebsocketManager(
-    () => {
-      console.log('WebSocketConnected')
-    },
-    (data: string) => {
-      const points = JSON.parse(data)
-      points.forEach((point: { x: number; y: number }) => {
-        graphManager.addPoints([new Vector2(point.x, point.y)])
-      })
-    },
-    () => {
-      console.log('error')
-      generator = new GeneratorManager(generatorCallback, graphManager)
-      generator.start()
-    },
-  )
-}
-
-window.onbeforeunload = function(): void {
-  localforage.clear()
-  return null
+  new WebsocketManager(graphManager, generatorCallback, () => {
+    console.log('error')
+    generator = new GeneratorManager(generatorCallback, graphManager)
+    generator.start()
+  })
 }
 
 window.onload = function(): void {

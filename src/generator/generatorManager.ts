@@ -16,6 +16,8 @@ export class GeneratorManager {
   private generating = false
   private frequency = 60
 
+  private folders: dat.GUI[]
+
   constructor(callback: (points: Vector2[]) => void, graphManager: GraphManager) {
     this.callback = callback
     this.graphManager = graphManager
@@ -27,10 +29,13 @@ export class GeneratorManager {
   }
 
   private initGUI(): void {
+    this.folders = []
     this.gui = new dat.GUI()
+    this.gui.addFolder('Generating Values')
     this.gui.add(this, 'frequency', 1, 1000).onChange(() => this.start())
     this.gui.add(this, 'toggle')
     this.gui.add(this, 'addGraph')
+    this.gui.add(this, 'removeGraph')
     this.gui.close()
   }
 
@@ -39,8 +44,14 @@ export class GeneratorManager {
     this.graphManager.addGraph()
   }
 
+  removeGraph(): void {
+    this.generators.pop()
+    this.gui.removeFolder(this.folders.pop())
+    this.graphManager.deleteGraph()
+  }
+
   private createGenerator(): void {
-    const newGenerator = new ValueGenerator()
+    const newGenerator = new ValueGenerator(this.generators.length + 1)
     const controlsFolder = this.gui.addFolder(`Graph ${newGenerator.id}`)
     controlsFolder
       .add(newGenerator, 'type', [
@@ -52,6 +63,7 @@ export class GeneratorManager {
     controlsFolder.add(newGenerator, 'period')
     controlsFolder.add(newGenerator, 'multiplier')
 
+    this.folders.push(controlsFolder)
     this.generators.push(newGenerator)
   }
 

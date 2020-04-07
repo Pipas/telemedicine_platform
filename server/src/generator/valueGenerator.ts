@@ -7,14 +7,15 @@ export enum GeneratorType {
 }
 
 export class ValueGenerator {
+  private static _id = 1
   private generatingFunction: (time: number) => Vector2
   public id: number
   public type = GeneratorType.SineGenerator
   public period = 1
   public multiplier = 10
 
-  constructor(id: number) {
-    this.id = id
+  constructor() {
+    this.id = ValueGenerator._id++
     this.updateGeneratingFunction()
   }
 

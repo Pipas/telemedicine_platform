@@ -42,6 +42,7 @@ class ChangeGraphMessage {
 }
 
 export class WebsocketManager extends EventDispatcher {
+  private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
   private gui: dat.GUI
   private graphMessage: ChangeGraphMessage
   private graphManager: GraphManager
@@ -51,10 +52,10 @@ export class WebsocketManager extends EventDispatcher {
   constructor(graphManager: GraphManager, generatorCallback: (points: Vector2[]) => void, onError: () => void) {
     super()
     this.graphManager = graphManager
-    this.connection = new WebSocket('ws://protected-mesa-09317.herokuapp.com')
+    this.connection = new WebSocket(this.websocketLocation)
 
     this.connection.addEventListener('open', () => {
-      console.log('connected')
+      console.log(`Connected to ${this.websocketLocation}`)
       this.initGUI()
     })
 

@@ -118,8 +118,6 @@ export class ChunkManager {
 
     if (chunk == null) return false
 
-    console.log('recalling', chunk)
-
     this.showChunk(chunk)
     this.visibleChunks.unshift(chunk)
 

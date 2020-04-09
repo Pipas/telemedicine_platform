@@ -51,7 +51,7 @@ export class WebsocketManager extends EventDispatcher {
   constructor(graphManager: GraphManager, generatorCallback: (points: Vector2[]) => void, onError: () => void) {
     super()
     this.graphManager = graphManager
-    this.connection = new WebSocket('ws://localhost:12345')
+    this.connection = new WebSocket('ws://protected-mesa-09317.herokuapp.com')
 
     this.connection.addEventListener('open', () => {
       console.log('connected')
@@ -64,7 +64,7 @@ export class WebsocketManager extends EventDispatcher {
       data.forEach(points => generatorCallback(points.map(point => new Vector2(point.x, point.y))))
     })
 
-    this.connection.addEventListener('error', e => {
+    this.connection.addEventListener('error', () => {
       onError()
     })
 

@@ -50,45 +50,45 @@ export class ChunkManager {
     }
 
     if (delta > 0) {
-      if (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
+      if (this.visibleChunks[this.visibleChunks.length - 1].getLastValue() < this.graph.visibleRange.maxX) {
         this.pushVisibleChunk()
       }
-      if (this.visibleChunks[0].lastValue < this.graph.visibleRange.minX) {
+      if (this.visibleChunks[0].getLastValue() < this.graph.visibleRange.minX) {
         this.shiftVisibleChunk()
       }
     } else {
-      if (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
+      if (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
         this.unshiftVisibleChunk()
       }
-      if (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
+      if (this.visibleChunks[this.visibleChunks.length - 1].getFirstValue() > this.graph.visibleRange.maxX) {
         this.popVisibleChunk()
       }
     }
   }
 
   private updateEmptyVisibleChunks(): void {
-    if (this.updatingChunk.lastValue > this.graph.visibleRange.minX) {
+    if (this.updatingChunk.getLastValue() > this.graph.visibleRange.minX) {
       this.showChunk(this.updatingChunk)
       this.visibleChunks.push(this.updatingChunk)
     }
   }
 
   onZoomOut(): void {
-    while (this.visibleChunks[0].firstValue > this.graph.visibleRange.minX) {
+    while (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
       if (!this.unshiftVisibleChunk()) break
     }
 
-    while (this.visibleChunks[this.visibleChunks.length - 1].lastValue < this.graph.visibleRange.maxX) {
+    while (this.visibleChunks[this.visibleChunks.length - 1].getLastValue() < this.graph.visibleRange.maxX) {
       if (!this.pushVisibleChunk()) break
     }
   }
 
   onZoomIn(): void {
-    while (this.visibleChunks[0].lastValue < this.graph.visibleRange.minX) {
+    while (this.visibleChunks[0].getLastValue() < this.graph.visibleRange.minX) {
       this.shiftVisibleChunk()
     }
 
-    while (this.visibleChunks[this.visibleChunks.length - 1].firstValue > this.graph.visibleRange.maxX) {
+    while (this.visibleChunks[this.visibleChunks.length - 1].getFirstValue() > this.graph.visibleRange.maxX) {
       this.popVisibleChunk()
     }
   }
@@ -117,6 +117,8 @@ export class ChunkManager {
     const chunk = this.storedChunks.find(chunk => chunk.id == this.visibleChunks[0].id - 1)
 
     if (chunk == null) return false
+
+    console.log('recalling', chunk)
 
     this.showChunk(chunk)
     this.visibleChunks.unshift(chunk)

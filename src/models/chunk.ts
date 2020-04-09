@@ -7,9 +7,6 @@ export class Chunk {
   static maxPoints = 500
   id: number
 
-  firstValue: number
-  lastValue: number
-
   line: LineSegments
 
   constructor(id: number, encoded: string = null) {
@@ -26,9 +23,26 @@ export class Chunk {
 
     const positions = new Float32Array(Chunk.maxPoints * 2 * 3)
     geometry.setAttribute('position', new BufferAttribute(positions, 3))
-    positions.set([0, 0, 0, 0, 0, 0], 0)
 
     geometry.setDrawRange(0, 0)
+
+    return new LineSegments(geometry, GraphLine.material)
+  }
+
+  createLineFromPoints(points: number[]): LineSegments {
+    const geometry = new BufferGeometry()
+
+    const positions = new Float32Array(Chunk.maxPoints * 2 * 3)
+
+    let i = 0
+    for (; i < points.length - 2; i += 2) {
+      positions.set([points[i], points[i + 1], 0, points[i + 2], points[i + 3], 0], i * 3)
+    }
+
+    geometry.setAttribute('position', new BufferAttribute(positions, 3))
+    geometry.setDrawRange(0, Chunk.maxPoints * 3 * 2)
+    geometry.computeBoundingSphere()
+    geometry.computeBoundingBox()
 
     return new LineSegments(geometry, GraphLine.material)
   }
@@ -45,9 +59,15 @@ export class Chunk {
     geometry.setDrawRange(0, range + 6)
     geometry.computeBoundingSphere()
     geometry.computeBoundingBox()
+  }
 
-    if (this.firstValue == null) this.firstValue = endPoint.x
-    this.lastValue = endPoint.x
+  getFirstValue(): number {
+    return ((this.line.geometry as BufferGeometry).attributes.position as BufferAttribute).array[0]
+  }
+
+  getLastValue(): number {
+    const geometry = this.line.geometry as BufferGeometry
+    return (geometry.attributes.position as BufferAttribute).array[geometry.drawRange.count - 3]
   }
 
   isFull(): boolean {
@@ -57,12 +77,25 @@ export class Chunk {
   }
 
   toBase64(): string {
+    const geometry = this.line.geometry as BufferGeometry
+
+    const positions = geometry.attributes.position as BufferAttribute
+
+    const points = []
+    for (let i = 0; i < positions.array.length; i += 6) {
+      points.push(positions.array[i])
+      points.push(positions.array[i + 1])
+    }
+
+    points.push(positions.array[positions.array.length - 3])
+    points.push(positions.array[positions.array.length - 2])
+
     return window.btoa(
       JSON.stringify({
         id: this.id,
-        firstValue: this.firstValue,
-        lastValue: this.lastValue,
-        line: this.line.toJSON(),
+        // firstValue: this.firstValue,
+        // lastValue: this.lastValue,
+        points: points,
       }),
     )
   }
@@ -70,8 +103,8 @@ export class Chunk {
   fromBase64(encoded: string): void {
     const unencoded = JSON.parse(window.atob(encoded))
     this.id = unencoded.id
-    this.firstValue = unencoded.firstValue
-    this.lastValue = unencoded.lastValue
-    this.line = Chunk.loader.parse(unencoded.line) as LineSegments
+    // this.firstValue = unencoded.firstValue
+    // this.lastValue = unencoded.lastValue
+    this.line = this.createLineFromPoints(unencoded.points)
   }
 }

@@ -1,21 +1,18 @@
 import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial, ObjectLoader } from 'three'
 import { GraphLine } from './graphLine'
+import { ChunkManager } from '../graph/chunkManager'
 
 export class Chunk {
   static loader = new ObjectLoader()
   static material = new LineBasicMaterial({ color: 0x0000ff })
-  static maxPoints = 500
+  static maxPoints = 60
   id: number
 
   line: LineSegments
 
-  constructor(id: number, encoded: string = null) {
-    if (encoded != null) {
-      this.fromBase64(encoded)
-    } else {
-      this.id = id
-      this.line = this.createLineSegment()
-    }
+  constructor(id: number) {
+    this.id = id
+    this.line = this.createLineSegment()
   }
 
   createLineSegment(): LineSegments {
@@ -29,22 +26,19 @@ export class Chunk {
     return new LineSegments(geometry, GraphLine.material)
   }
 
-  createLineFromPoints(points: number[]): LineSegments {
-    const geometry = new BufferGeometry()
+  private addPoints(points: number[]): void {
+    const geometry = this.line.geometry as BufferGeometry
 
-    const positions = new Float32Array(Chunk.maxPoints * 2 * 3)
+    const positions = geometry.attributes.position as BufferAttribute
 
     let i = 0
     for (; i < points.length - 2; i += 2) {
       positions.set([points[i], points[i + 1], 0, points[i + 2], points[i + 3], 0], i * 3)
     }
 
-    geometry.setAttribute('position', new BufferAttribute(positions, 3))
     geometry.setDrawRange(0, Chunk.maxPoints * 3 * 2)
     geometry.computeBoundingSphere()
     geometry.computeBoundingBox()
-
-    return new LineSegments(geometry, GraphLine.material)
   }
 
   add(startPoint: Vector2, endPoint: Vector2): void {
@@ -93,8 +87,6 @@ export class Chunk {
     return window.btoa(
       JSON.stringify({
         id: this.id,
-        // firstValue: this.firstValue,
-        // lastValue: this.lastValue,
         points: points,
       }),
     )
@@ -102,9 +94,7 @@ export class Chunk {
 
   fromBase64(encoded: string): void {
     const unencoded = JSON.parse(window.atob(encoded))
-    this.id = unencoded.id
-    // this.firstValue = unencoded.firstValue
-    // this.lastValue = unencoded.lastValue
-    this.line = this.createLineFromPoints(unencoded.points)
+    if (this.id != unencoded.id) return
+    this.addPoints(unencoded.points)
   }
 }

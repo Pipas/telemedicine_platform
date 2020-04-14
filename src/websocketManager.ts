@@ -13,11 +13,6 @@ enum GeneratorType {
   LinearGenerator = 'LinearGenerator',
 }
 
-type websocketMessage = {
-  type: string
-  data: string
-}
-
 class ChangeGraphMessage {
   graph: number
   type: GeneratorType
@@ -42,7 +37,7 @@ class ChangeGraphMessage {
 }
 
 export class WebsocketManager extends EventDispatcher {
-  private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
+  private websocketLocation = 'ws://localhost' //'wss://protected-mesa-09317.herokuapp.com'
   private gui: dat.GUI
   private graphMessage: ChangeGraphMessage
   private graphManager: GraphManager

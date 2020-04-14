@@ -40,10 +40,11 @@ var WebsocketManager = /** @class */ (function (_super) {
     __extends(WebsocketManager, _super);
     function WebsocketManager(graphManager, generatorCallback, onError) {
         var _this = _super.call(this) || this;
+        _this.websocketLocation = 'ws://localhost'; //'wss://protected-mesa-09317.herokuapp.com'
         _this.graphManager = graphManager;
-        _this.connection = new WebSocket('ws://protected-mesa-09317.herokuapp.com:5000/');
+        _this.connection = new WebSocket(_this.websocketLocation);
         _this.connection.addEventListener('open', function () {
-            console.log('connected');
+            console.log("Connected to " + _this.websocketLocation);
             _this.initGUI();
         });
         _this.connection.addEventListener('message', function (e) {
@@ -51,7 +52,7 @@ var WebsocketManager = /** @class */ (function (_super) {
             var data = JSON.parse(e.data);
             data.forEach(function (points) { return generatorCallback(points.map(function (point) { return new Vector2(point.x, point.y); })); });
         });
-        _this.connection.addEventListener('error', function (e) {
+        _this.connection.addEventListener('error', function () {
             onError();
         });
         window.onbeforeunload = function () {

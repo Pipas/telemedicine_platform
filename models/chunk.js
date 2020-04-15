@@ -64,21 +64,17 @@ var Chunk = /** @class */ (function () {
         points.push(positions.array[positions.array.length - 2]);
         return window.btoa(JSON.stringify({
             id: this.id,
-            // firstValue: this.firstValue,
-            // lastValue: this.lastValue,
             points: points,
         }));
     };
     Chunk.prototype.fromBase64 = function (encoded) {
         var unencoded = JSON.parse(window.atob(encoded));
         this.id = unencoded.id;
-        // this.firstValue = unencoded.firstValue
-        // this.lastValue = unencoded.lastValue
         this.line = this.createLineFromPoints(unencoded.points);
     };
     Chunk.loader = new ObjectLoader();
     Chunk.material = new LineBasicMaterial({ color: 0x0000ff });
-    Chunk.maxPoints = 500;
+    Chunk.maxPoints = 60;
     return Chunk;
 }());
 export { Chunk };

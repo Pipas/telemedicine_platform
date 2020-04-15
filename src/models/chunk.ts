@@ -1,17 +1,21 @@
 import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial, ObjectLoader } from 'three'
 import { GraphLine } from './graphLine'
-import { ChunkManager } from '../graph/chunkManager'
 
 export class Chunk {
   static loader = new ObjectLoader()
   static material = new LineBasicMaterial({ color: 0x0000ff })
-  static maxPoints = 60
+  static maxPoints = 1000
+
   id: number
+  lastValue: number
+  firstValue: number
 
   line: LineSegments
 
-  constructor(id: number) {
+  constructor(id: number, firstValue: number = undefined, lastValue: number = undefined) {
     this.id = id
+    this.firstValue = firstValue
+    this.lastValue = lastValue
     this.line = this.createLineSegment()
   }
 
@@ -56,10 +60,14 @@ export class Chunk {
   }
 
   getFirstValue(): number {
+    if (this.firstValue != undefined) return this.firstValue
+
     return ((this.line.geometry as BufferGeometry).attributes.position as BufferAttribute).array[0]
   }
 
   getLastValue(): number {
+    if (this.lastValue != undefined) return this.lastValue
+
     const geometry = this.line.geometry as BufferGeometry
     return (geometry.attributes.position as BufferAttribute).array[geometry.drawRange.count - 3]
   }

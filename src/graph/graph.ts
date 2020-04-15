@@ -118,9 +118,7 @@ export class Graph {
     this.mouseDragger.addEventListener('drag', event => {
       this.setAutoMoveHorizontalRange(false)
 
-      this.moveHorizontalRange(
-        -event.delta.x * ((this.visibleRange.maxX - this.visibleRange.minX) / this.element.offsetWidth),
-      )
+      this.moveHorizontalRange(-event.delta.x * (this.visibleRange.width() / this.element.offsetWidth))
     })
   }
 
@@ -233,8 +231,7 @@ export class Graph {
     const ratio = newAspect / this.camera.aspect
 
     // Calculate added delta based on the ratio of widths
-    const delta =
-      (this.visibleRange.maxX - this.visibleRange.minX) * ratio - (this.visibleRange.maxX - this.visibleRange.minX)
+    const delta = this.visibleRange.width() * ratio - this.visibleRange.width()
     this.visibleRange.maxX += delta
 
     // Adjust camera to new aspect and move to place
@@ -354,8 +351,25 @@ export class Graph {
     this.xAxis.moveAxis(delta)
     this.yAxis.moveSteps(delta)
 
-    // Hangles chunk changes
-    this.chunkManager.checkChunkChange(delta)
+    // Handles chunk changes
+    this.chunkManager.onMove(delta)
+  }
+
+  private jumpToLastPoint(delta: number): void {
+    // Moves the camera and visible range to delta
+    this.camera.position.x += delta * this.xZoom
+    this.visibleRange.maxX += delta
+    this.visibleRange.minX += delta
+
+    // Moves the horizontal scale accordingly
+    this.xAxis.moveScale(delta)
+
+    // Moves axis objects accordingly
+    this.xAxis.moveAxis(delta)
+    this.yAxis.moveSteps(delta)
+
+    // Handles chunk changes
+    this.chunkManager.onJump()
   }
 
   /**
@@ -367,6 +381,8 @@ export class Graph {
   private updateVerticalRange(): void {
     // Gets the outline of the plotline
     const plotLineOutline = new Box3().setFromObject(this.plotLine)
+
+    if (plotLineOutline.min.y == Infinity) return
 
     // Calculates the highest absolute value
     const highestValue = Math.max(Math.abs(plotLineOutline.min.y / this.yZoom), plotLineOutline.max.y / this.yZoom)
@@ -416,8 +432,13 @@ export class Graph {
     if (this.autoUpdateVerticalRange) this.updateVerticalRange()
 
     // Moves horizontal range if it should
-    if (this.autoMoveHorizontalRange && this.chunkManager.lastPoint.x > this.visibleRange.maxX) {
-      this.moveHorizontalRange(this.chunkManager.lastPoint.x - this.visibleRange.maxX)
+    const delta = this.chunkManager.lastPoint.x - this.visibleRange.maxX
+    if (this.autoMoveHorizontalRange && delta > 0) {
+      if (this.visibleRange.width() < delta) {
+        this.jumpToLastPoint(delta)
+      } else {
+        this.moveHorizontalRange(delta)
+      }
     }
   }
 }

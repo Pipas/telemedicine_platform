@@ -36,6 +36,7 @@ function initWebSocket(): void {
 
 window.onload = function(): void {
   localforage.clear()
+  sessionStorage.clear()
   graphManager = new GraphManager()
 
   initWebSocket()

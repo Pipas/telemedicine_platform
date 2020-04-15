@@ -12,6 +12,7 @@ export class ChunkManager {
   leftLoadedChunks: Chunk[]
   rightLoadedChunks: Chunk[]
 
+  firstValue: number
   lastPoint: Vector2
   updatingChunk: Chunk
   chunkIdAccumulator = 0
@@ -31,6 +32,7 @@ export class ChunkManager {
   addPoint(point: Vector2): void {
     if (this.lastPoint == null) {
       this.lastPoint = point
+      this.firstValue = point.x
       return
     }
 
@@ -39,41 +41,72 @@ export class ChunkManager {
 
     if (this.updatingChunk.isFull()) {
       this.createNewUpdatingChunk()
-
-      if (this.visibleChunks[this.visibleChunks.length - 1].getLastValue() < this.graph.visibleRange.maxX) {
-        this.pushVisibleChunk()
-      }
+      this.onMove(1)
     }
 
-    // console.log({
-    //   left: this.leftLoadedChunks,
-    //   visible: this.visibleChunks,
-    //   right: this.rightLoadedChunks,
-    // })
+    this.updateEmptyVisibleChunks()
   }
 
-  checkChunkChange(delta: number): void {
+  onMove(delta: number): void {
     if (delta > 0) {
-      if (this.visibleChunks[this.visibleChunks.length - 1].getLastValue() < this.graph.visibleRange.maxX) {
-        this.pushVisibleChunk()
+      while (
+        this.rightLoadedChunks.length > 0 &&
+        this.rightLoadedChunks[0].getFirstValue() < this.graph.visibleRange.maxX
+      ) {
+        if (!this.pushVisibleChunk()) break
       }
-      if (this.visibleChunks[0].getLastValue() < this.graph.visibleRange.minX) {
+      while (this.visibleChunks.length > 0 && this.visibleChunks[0].getLastValue() < this.graph.visibleRange.minX) {
         this.shiftVisibleChunk()
       }
     } else {
-      if (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
-        this.unshiftVisibleChunk()
+      while (
+        this.leftLoadedChunks.length > 0 &&
+        this.leftLoadedChunks[this.leftLoadedChunks.length - 1].getLastValue() > this.graph.visibleRange.minX
+      ) {
+        if (!this.unshiftVisibleChunk()) break
       }
-      if (this.visibleChunks[this.visibleChunks.length - 1].getFirstValue() > this.graph.visibleRange.maxX) {
+      while (
+        this.visibleChunks.length > 0 &&
+        this.visibleChunks[this.visibleChunks.length - 1].getFirstValue() > this.graph.visibleRange.maxX
+      ) {
         this.popVisibleChunk()
       }
     }
   }
 
+  onJump(): void {
+    this.visibleChunks.forEach(chunk => {
+      this.hideChunk(chunk)
+    })
+
+    this.visibleChunks = []
+    this.leftLoadedChunks = []
+    this.rightLoadedChunks = []
+
+    this.visibleChunks.unshift(this.updatingChunk)
+    this.showChunk(this.updatingChunk)
+    while (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
+      const chunk = this.getStoredChunk(this.visibleChunks[0].id - 1)
+      if (chunk != null) this.visibleChunks.unshift(chunk)
+      else break
+    }
+
+    let firstId = this.visibleChunks[0].id - 1
+    while (this.leftLoadedChunks.length < ChunkManager.chunkPadding) {
+      const chunk = this.getStoredChunk(firstId)
+      if (chunk != null) this.leftLoadedChunks.unshift(chunk)
+      else break
+      firstId--
+    }
+  }
+
   private updateEmptyVisibleChunks(): void {
-    if (this.updatingChunk.getLastValue() > this.graph.visibleRange.minX) {
-      this.showChunk(this.updatingChunk)
-      this.visibleChunks.push(this.updatingChunk)
+    if (
+      this.visibleChunks.length == 0 &&
+      this.rightLoadedChunks.length == 0 &&
+      this.leftLoadedChunks[this.leftLoadedChunks.length - 1].getLastValue() > this.graph.visibleRange.minX
+    ) {
+      this.unshiftVisibleChunk()
     }
   }
 
@@ -98,21 +131,20 @@ export class ChunkManager {
   }
 
   private createNewUpdatingChunk(): void {
-    if (this.rightLoadedChunks.length >= ChunkManager.chunkPadding) {
-      this.storeChunk(this.updatingChunk)
-    }
+    this.storeChunk(this.updatingChunk)
 
     this.updatingChunk = new Chunk(this.chunkIdAccumulator++)
 
-    if (this.rightLoadedChunks.length < ChunkManager.chunkPadding) {
+    if (this.rightLoadedChunks.length == 0 && this.visibleChunks.length == 0) {
+      this.pushLeftChunk(this.updatingChunk)
+    } else if (this.rightLoadedChunks.length < ChunkManager.chunkPadding) {
       this.rightLoadedChunks.push(this.updatingChunk)
     }
   }
 
   private unshiftRightChunk(chunk: Chunk): void {
     if (this.rightLoadedChunks.length >= ChunkManager.chunkPadding) {
-      const chunk = this.rightLoadedChunks.pop()
-      if (chunk != this.updatingChunk) this.storeChunk(chunk)
+      this.rightLoadedChunks.pop()
     }
 
     this.rightLoadedChunks.unshift(chunk)
@@ -137,7 +169,7 @@ export class ChunkManager {
 
   private pushLeftChunk(chunk: Chunk): void {
     if (this.leftLoadedChunks.length >= ChunkManager.chunkPadding) {
-      this.storeChunk(this.leftLoadedChunks.shift())
+      this.leftLoadedChunks.shift()
     }
 
     this.leftLoadedChunks.push(chunk)
@@ -166,7 +198,7 @@ export class ChunkManager {
     this.showChunk(chunk)
     this.visibleChunks.push(chunk)
 
-    console.log('   Push chunk', chunk, ` ~ Right: ${this.rightLoadedChunks.map(x => x.id)}`)
+    // console.log('   Push chunk', chunk, ` ~ Right: ${this.rightLoadedChunks.map(x => x.id)}`)
 
     return true
   }
@@ -177,7 +209,7 @@ export class ChunkManager {
 
     this.pushLeftChunk(chunk)
 
-    console.log('  Shift chunk', chunk, ` ~ Left:  ${this.leftLoadedChunks.map(x => x.id)}`)
+    // console.log('  Shift chunk', chunk, ` ~ Left:  ${this.leftLoadedChunks.map(x => x.id)}`)
   }
 
   private unshiftVisibleChunk(): boolean {
@@ -188,7 +220,7 @@ export class ChunkManager {
     this.showChunk(chunk)
     this.visibleChunks.unshift(chunk)
 
-    console.log('Unshift chunk', chunk, ` ~ Left:  ${this.leftLoadedChunks.map(x => x.id)}`)
+    // console.log('Unshift chunk', chunk, ` ~ Left:  ${this.leftLoadedChunks.map(x => x.id)}`)
 
     return true
   }
@@ -199,7 +231,7 @@ export class ChunkManager {
 
     this.unshiftRightChunk(chunk)
 
-    console.log('    Pop chunk', chunk, ` ~ Right: ${this.rightLoadedChunks.map(x => x.id)}`)
+    // console.log('    Pop chunk', chunk, ` ~ Right: ${this.rightLoadedChunks.map(x => x.id)}`)
   }
 
   private hideChunk(chunk: Chunk): void {
@@ -211,22 +243,31 @@ export class ChunkManager {
   }
 
   private getStoredChunk(id: number): Chunk {
-    const chunk = new Chunk(id)
+    const storedId = sessionStorage.getItem(`${this.graph.id}-${id}`)
 
-    // console.log(`Created #${id}`)
+    if (storedId == null) return
+
+    const firstValue =
+      id > 0 ? Number.parseFloat(sessionStorage.getItem(`${this.graph.id}-${id - 1}`)) : this.firstValue
+
+    const lastValue = Number.parseFloat(storedId)
+
+    const chunk = new Chunk(id, firstValue, lastValue)
 
     localforage.getItem(`${this.graph.id}-${id}`).then((encoded: string) => {
       if (encoded == null) return
       chunk.fromBase64(encoded)
-      if (this.visibleChunks.includes(chunk)) this.showChunk(chunk)
-
-      // console.log(`Updated #${id}`)
+      if (this.visibleChunks.includes(chunk)) {
+        this.showChunk(chunk)
+      }
     })
 
     return chunk
   }
 
   private storeChunk(chunk: Chunk): void {
+    sessionStorage.setItem(`${this.graph.id}-${chunk.id}`, chunk.getLastValue().toString())
+
     localforage.keys().then((keys: string[]) => {
       if (!keys.includes(`${this.graph.id}-${chunk.id}`))
         localforage.setItem(`${this.graph.id}-${chunk.id}`, chunk.toBase64())

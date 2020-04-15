@@ -11,6 +11,10 @@ export class VisibleRange {
     this.maxY = maxY
   }
 
+  width(): number {
+    return this.maxX - this.minX
+  }
+
   containsX(x: number): boolean {
     return this.minX <= x && this.maxX >= x
   }

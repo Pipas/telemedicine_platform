@@ -50,7 +50,6 @@ export class ChunkManager {
       this.lastPoint = sliced.pop()
 
       if (this.updatingChunk.isFull()) {
-        console.log('full chunk')
         this.createNewUpdatingChunk()
         this.onMove(1)
       }

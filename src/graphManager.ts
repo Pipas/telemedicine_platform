@@ -1,5 +1,6 @@
 import { WebGLRenderer, Vector2 } from 'three'
 import { Graph } from './graph/graph'
+import { TimedValues } from './models/timedValues'
 
 export class GraphManager {
   private canvas: HTMLCanvasElement
@@ -49,6 +50,14 @@ export class GraphManager {
   addPoints(points: Vector2[]): void {
     this.graphs.forEach((graph, index) => {
       graph.addPoint(points[index])
+    })
+  }
+
+  addTimedValues(timedValues: TimedValues[]): void {
+    timedValues.forEach(tv => {
+      for (let i = 0; i < this.graphs.length; i++) {
+        this.graphs[i].addPoint(new Vector2(tv.time, tv.values[i]))
+      }
     })
   }
 

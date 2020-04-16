@@ -1,11 +1,9 @@
-import { EventDispatcher, Vector2 } from 'three'
+import { EventDispatcher } from 'three'
 import * as dat from 'dat.gui'
 import { GraphManager } from './graphManager'
+import { TimedValues } from './models/timedValues'
 
-type WebsocketMessage = {
-  x: number
-  y: number
-}[][]
+type WebsocketMessage = TimedValues[]
 
 enum GeneratorType {
   SineGenerator = 'SineGenerator',
@@ -37,15 +35,14 @@ class ChangeGraphMessage {
 }
 
 export class WebsocketManager extends EventDispatcher {
-  // private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
-  private websocketLocation = 'ws://localhost'
+  private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
+  // private websocketLocation = 'ws://localhost:12345'
   private gui: dat.GUI
   private graphMessage: ChangeGraphMessage
   private graphManager: GraphManager
   connection: WebSocket
-  generatorCallback: (points: Vector2[]) => void
 
-  constructor(graphManager: GraphManager, generatorCallback: (points: Vector2[]) => void, onError: () => void) {
+  constructor(graphManager: GraphManager, callback: (points: TimedValues[]) => void, onError: () => void) {
     super()
     this.graphManager = graphManager
     this.connection = new WebSocket(this.websocketLocation)
@@ -58,7 +55,8 @@ export class WebsocketManager extends EventDispatcher {
     this.connection.addEventListener('message', e => {
       // onMessage(e.data)
       const data = JSON.parse(e.data) as WebsocketMessage
-      data.forEach(points => generatorCallback(points.map(point => new Vector2(point.x, point.y))))
+      // console.log('received message')
+      callback(data)
     })
 
     this.connection.addEventListener('error', () => {

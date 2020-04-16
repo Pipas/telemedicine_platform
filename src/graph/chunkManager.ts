@@ -83,20 +83,17 @@ export class ChunkManager {
     this.leftLoadedChunks = []
     this.rightLoadedChunks = []
 
-    this.visibleChunks.unshift(this.updatingChunk)
-    this.showChunk(this.updatingChunk)
-    while (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
-      const chunk = this.getStoredChunk(this.visibleChunks[0].id - 1)
-      if (chunk != null) this.visibleChunks.unshift(chunk)
+    this.leftLoadedChunks.unshift(this.updatingChunk)
+
+    while (this.leftLoadedChunks.length < ChunkManager.chunkPadding) {
+      const chunk = this.getStoredChunk(this.leftLoadedChunks[0].id - 1)
+      if (chunk != null) this.leftLoadedChunks.unshift(chunk)
       else break
     }
 
-    let firstId = this.visibleChunks[0].id - 1
-    while (this.leftLoadedChunks.length < ChunkManager.chunkPadding) {
-      const chunk = this.getStoredChunk(firstId)
-      if (chunk != null) this.leftLoadedChunks.unshift(chunk)
-      else break
-      firstId--
+    this.unshiftVisibleChunk()
+    while (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
+      if (!this.unshiftVisibleChunk()) break
     }
   }
 
@@ -111,12 +108,12 @@ export class ChunkManager {
   }
 
   onZoomOut(): void {
-    while (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
-      if (!this.unshiftVisibleChunk()) break
-    }
-
     while (this.visibleChunks[this.visibleChunks.length - 1].getLastValue() < this.graph.visibleRange.maxX) {
       if (!this.pushVisibleChunk()) break
+    }
+
+    while (this.visibleChunks[0].getFirstValue() > this.graph.visibleRange.minX) {
+      if (!this.unshiftVisibleChunk()) break
     }
   }
 
@@ -257,9 +254,6 @@ export class ChunkManager {
     localforage.getItem(`${this.graph.id}-${id}`).then((encoded: string) => {
       if (encoded == null) return
       chunk.fromBase64(encoded)
-      if (this.visibleChunks.includes(chunk)) {
-        this.showChunk(chunk)
-      }
     })
 
     return chunk

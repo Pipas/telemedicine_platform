@@ -39,6 +39,7 @@ export class Chunk {
     for (; i < points.length - 2; i += 2) {
       positions.set([points[i], points[i + 1], 0, points[i + 2], points[i + 3], 0], i * 3)
     }
+    positions.needsUpdate = true
 
     geometry.setDrawRange(0, Chunk.maxPoints * 3 * 2)
     geometry.computeBoundingSphere()
@@ -104,5 +105,6 @@ export class Chunk {
     const unencoded = JSON.parse(window.atob(encoded))
     if (this.id != unencoded.id) return
     this.addPoints(unencoded.points)
+    console.log(`Recovered ${this.id}`)
   }
 }

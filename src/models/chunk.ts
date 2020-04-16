@@ -30,7 +30,7 @@ export class Chunk {
     return new LineSegments(geometry, GraphLine.material)
   }
 
-  private addPoints(points: number[]): void {
+  private reconstructPoints(points: number[]): void {
     const geometry = this.line.geometry as BufferGeometry
 
     const positions = geometry.attributes.position as BufferAttribute
@@ -46,16 +46,20 @@ export class Chunk {
     geometry.computeBoundingBox()
   }
 
-  add(startPoint: Vector2, endPoint: Vector2): void {
+  addPoints(points: Vector2[]): void {
     const geometry = this.line.geometry as BufferGeometry
     const range = geometry.drawRange.count
 
     const positions = geometry.attributes.position as BufferAttribute
 
-    positions.set([startPoint.x, startPoint.y, 0, endPoint.x, endPoint.y, 0], range)
+    let i = 0
+    for (; i < points.length - 1; i++) {
+      positions.set([points[i].x, points[i].y, 0, points[i + 1].x, points[i + 1].y, 0], range + i * 6)
+    }
+
     positions.needsUpdate = true
 
-    geometry.setDrawRange(0, range + 6)
+    geometry.setDrawRange(0, range + i * 6)
     geometry.computeBoundingSphere()
     geometry.computeBoundingBox()
   }
@@ -71,6 +75,12 @@ export class Chunk {
 
     const geometry = this.line.geometry as BufferGeometry
     return (geometry.attributes.position as BufferAttribute).array[geometry.drawRange.count - 3]
+  }
+
+  availableSpace(): number {
+    const range = (this.line.geometry as BufferGeometry).drawRange.count
+
+    return Chunk.maxPoints - range / 6
   }
 
   isFull(): boolean {
@@ -104,7 +114,6 @@ export class Chunk {
   fromBase64(encoded: string): void {
     const unencoded = JSON.parse(window.atob(encoded))
     if (this.id != unencoded.id) return
-    this.addPoints(unencoded.points)
-    console.log(`Recovered ${this.id}`)
+    this.reconstructPoints(unencoded.points)
   }
 }

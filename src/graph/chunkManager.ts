@@ -29,19 +29,34 @@ export class ChunkManager {
     this.visibleChunks.push(this.updatingChunk)
   }
 
-  addPoint(point: Vector2): void {
+  addPoints(p: Vector2[]): void {
+    const points = p
     if (this.lastPoint == null) {
-      this.lastPoint = point
-      this.firstValue = point.x
-      return
+      const firstPoint = points.shift()
+      if (firstPoint == undefined) return
+      this.lastPoint = firstPoint
+      this.firstValue = firstPoint.x
     }
 
-    this.updatingChunk.add(this.lastPoint, point)
-    this.lastPoint = point
+    if (points.length == 0) return
 
-    if (this.updatingChunk.isFull()) {
-      this.createNewUpdatingChunk()
-      this.onMove(1)
+    let shouldBreak = 0
+    while (points.length > 0) {
+      points.unshift(this.lastPoint)
+
+      const availableSpace = this.updatingChunk.availableSpace()
+      const sliced = points.splice(0, availableSpace < points.length ? availableSpace + 1 : points.length)
+      this.updatingChunk.addPoints(sliced)
+      this.lastPoint = sliced.pop()
+
+      if (this.updatingChunk.isFull()) {
+        console.log('full chunk')
+        this.createNewUpdatingChunk()
+        this.onMove(1)
+      }
+
+      shouldBreak++
+      if (shouldBreak == 10) break
     }
 
     this.updateEmptyVisibleChunks()

@@ -97,13 +97,13 @@ export class Graph {
   }
 
   /**
-   * Adds a point to the graph point buffer
+   * Adds points to the graph point buffer
    *
-   * @param {Vector2} point
+   * @param {Vector2[]} points
    * @memberof Graph
    */
-  addPoint(point: Vector2): void {
-    this.pointBuffer.push(point)
+  addPoint(points: Vector2): void {
+    this.pointBuffer.push(points)
   }
 
   /**
@@ -420,13 +420,8 @@ export class Graph {
     // If empty returns
     if (this.pointBuffer.length === 0) return
 
-    // Add each point to the chunk manager
-    this.pointBuffer.forEach(point => {
-      this.chunkManager.addPoint(point)
-    })
-
-    // Empties the buffer
-    this.pointBuffer = []
+    // Add points to the chunk manager and empties it
+    this.chunkManager.addPoints(this.pointBuffer)
 
     // Updates vertical range if it should
     if (this.autoUpdateVerticalRange) this.updateVerticalRange()

@@ -20,6 +20,7 @@
     "@types/three": "^0.103.2",
     "@typescript-eslint/eslint-plugin": "^2.23.0",
     "@typescript-eslint/parser": "^2.23.0",
+    "@types/pako": "^1.0.1",
     "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.10.0",
     "eslint-plugin-prettier": "^3.1.2",
@@ -34,11 +35,14 @@
     "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
+    "@types/blob-to-buffer": "^1.2.0",
+    "blob-to-buffer": "^1.2.8",
+    "buffer": "^5.6.0",
     "dat.gui": "^0.7.6",
     "localforage": "^1.7.3",
+    "pako": "^1.0.11",
     "stats.js": "^0.17.0",
-    "three": "^0.114.0",
-    "three-dragger": "^1.0.1"
+    "three": "^0.114.0"
   },
   "husky": {
     "hooks": {

@@ -1,5 +1,8 @@
 import { EventDispatcher } from 'three'
 import * as dat from 'dat.gui'
+import * as toBuffer from 'blob-to-buffer'
+import { Buffer } from 'buffer/'
+import { inflate } from 'pako'
 import { GraphManager } from './graphManager'
 import { TimedValues } from './models/timedValues'
 
@@ -53,10 +56,9 @@ export class WebsocketManager extends EventDispatcher {
     })
 
     this.connection.addEventListener('message', e => {
-      // onMessage(e.data)
-      const data = JSON.parse(e.data) as WebsocketMessage
-      // console.log('received message')
-      callback(data)
+      toBuffer(e.data, (err, buffer) => {
+        callback(this.decompressData((buffer as unknown) as Buffer))
+      })
     })
 
     this.connection.addEventListener('error', () => {
@@ -69,6 +71,24 @@ export class WebsocketManager extends EventDispatcher {
       } // disable onclose handler first
       this.connection.close()
     }
+  }
+
+  private decompressData(compressed: Buffer): TimedValues[] {
+    const decompresssed = Buffer.from(inflate(compressed))
+    const firstTime = decompresssed.readFloatBE(0)
+    const lastTime = decompresssed.readFloatBE(4)
+    const timeStep = (lastTime - firstTime) / ((decompresssed.length / 4 - 2) / 8)
+    const timedValues = []
+    let tempValues = []
+    for (let i = 8; i < decompresssed.length; i += 4) {
+      tempValues.push(decompresssed.readFloatBE(i))
+      if (tempValues.length == 8) {
+        timedValues.push(new TimedValues(firstTime + timedValues.length * timeStep, tempValues))
+        tempValues = []
+      }
+    }
+
+    return timedValues
   }
 
   private initGUI(): void {

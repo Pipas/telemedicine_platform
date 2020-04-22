@@ -1,5 +1,7 @@
 import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial, ObjectLoader } from 'three'
 import { GraphLine } from './graphLine'
+import { deflate, inflate } from 'pako'
+import { Buffer } from 'buffer/'
 
 export class Chunk {
   static loader = new ObjectLoader()
@@ -30,14 +32,24 @@ export class Chunk {
     return new LineSegments(geometry, GraphLine.material)
   }
 
-  private reconstructPoints(points: number[]): void {
+  fromBuffer(buffer: Buffer): void {
     const geometry = this.line.geometry as BufferGeometry
 
     const positions = geometry.attributes.position as BufferAttribute
 
     let i = 0
-    for (; i < points.length - 2; i += 2) {
-      positions.set([points[i], points[i + 1], 0, points[i + 2], points[i + 3], 0], i * 3)
+    for (; i < buffer.length / 4 - 2; i += 2) {
+      positions.set(
+        [
+          buffer.readFloatBE(i * 4),
+          buffer.readFloatBE((i + 1) * 4),
+          0,
+          buffer.readFloatBE((i + 2) * 4),
+          buffer.readFloatBE((i + 3) * 4),
+          0,
+        ],
+        i * 3,
+      )
     }
     positions.needsUpdate = true
 
@@ -89,31 +101,33 @@ export class Chunk {
     return range / 6 == Chunk.maxPoints
   }
 
-  toBase64(): string {
+  getPositions(): BufferAttribute {
+    const geometry = this.line.geometry as BufferGeometry
+
+    return geometry.attributes.position as BufferAttribute
+  }
+
+  encode(): Uint8Array {
     const geometry = this.line.geometry as BufferGeometry
 
     const positions = geometry.attributes.position as BufferAttribute
 
-    const points = []
+    const buffer = Buffer.alloc(4 * ((positions.array.length / 6) * 2 + 2))
+    let offset = 0
     for (let i = 0; i < positions.array.length; i += 6) {
-      points.push(positions.array[i])
-      points.push(positions.array[i + 1])
+      buffer.writeFloatBE(positions.array[i], offset)
+      buffer.writeFloatBE(positions.array[i + 1], offset + 4)
+      offset += 8
     }
 
-    points.push(positions.array[positions.array.length - 3])
-    points.push(positions.array[positions.array.length - 2])
+    buffer.writeFloatBE(positions.array[positions.array.length - 3], offset)
+    buffer.writeFloatBE(positions.array[positions.array.length - 2], offset + 4)
 
-    return window.btoa(
-      JSON.stringify({
-        id: this.id,
-        points: points,
-      }),
-    )
+    return deflate(buffer)
   }
 
-  fromBase64(encoded: string): void {
-    const unencoded = JSON.parse(window.atob(encoded))
-    if (this.id != unencoded.id) return
-    this.reconstructPoints(unencoded.points)
+  decode(encoded: Uint8Array): void {
+    const buffer = Buffer.from(inflate(encoded))
+    this.fromBuffer(buffer)
   }
 }

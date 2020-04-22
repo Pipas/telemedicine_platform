@@ -6,6 +6,7 @@ import { WebsocketManager } from './websocketManager'
 import * as localforage from 'localforage'
 import { GeneratorManager } from './generator/generatorManager'
 import { TimedValues } from './models/timedValues'
+import { spawn, Thread, Worker } from 'threads'
 
 let graphManager: GraphManager
 let generator: GeneratorManager

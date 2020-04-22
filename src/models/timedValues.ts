@@ -6,11 +6,4 @@ export class TimedValues {
     this.time = time
     this.values = values
   }
-
-  // toString(): string {
-  //   return JSON.stringify({
-  //     x: this.x,
-  //     y: this.y
-  //   })
-  // }
 }

@@ -1,6 +1,9 @@
 import { Chunk } from '../models/chunk'
 import { Vector2 } from 'three'
 import { Graph } from './graph'
+import { Buffer } from 'buffer/'
+import { spawn, Thread, Worker } from 'threads'
+import { LocalChunkHandler } from '../workers/localChunkHandler'
 
 import * as localforage from 'localforage'
 
@@ -8,9 +11,11 @@ export class ChunkManager {
   private static chunkPadding = 3
 
   graph: Graph
-  visibleChunks: Chunk[]
-  leftLoadedChunks: Chunk[]
-  rightLoadedChunks: Chunk[]
+  private visibleChunks: Chunk[]
+  private leftLoadedChunks: Chunk[]
+  private rightLoadedChunks: Chunk[]
+
+  private localChunkHandler: LocalChunkHandler
 
   firstValue: number
   lastPoint: Vector2
@@ -27,6 +32,13 @@ export class ChunkManager {
     this.updatingChunk = new Chunk(this.chunkIdAccumulator++)
     this.showChunk(this.updatingChunk)
     this.visibleChunks.push(this.updatingChunk)
+
+    this.initLocalChunkHandler()
+  }
+
+  async initLocalChunkHandler(): Promise<void> {
+    this.localChunkHandler = await spawn<LocalChunkHandler>(new Worker('../workers/localChunkHandler'))
+    console.log('local chunk defined')
   }
 
   addPoints(p: Vector2[]): void {
@@ -265,20 +277,22 @@ export class ChunkManager {
 
     const chunk = new Chunk(id, firstValue, lastValue)
 
-    localforage.getItem(`${this.graph.id}-${id}`).then((encoded: string) => {
+    localforage.getItem(`${this.graph.id}-${id}`).then((encoded: Uint8Array) => {
       if (encoded == null) return
-      chunk.fromBase64(encoded)
+      chunk.decode(encoded)
     })
+
+    this.localChunkHandler.get(chunk.id, this.graph.id).then((buffer: Buffer) => chunk.fromBuffer(buffer))
 
     return chunk
   }
 
   private storeChunk(chunk: Chunk): void {
     sessionStorage.setItem(`${this.graph.id}-${chunk.id}`, chunk.getLastValue().toString())
-
-    localforage.keys().then((keys: string[]) => {
-      if (!keys.includes(`${this.graph.id}-${chunk.id}`))
-        localforage.setItem(`${this.graph.id}-${chunk.id}`, chunk.toBase64())
-    })
+    this.localChunkHandler.store(chunk.getPositions(), chunk.id, this.graph.id)
+    // localforage.keys().then((keys: string[]) => {
+    //   if (!keys.includes(`${this.graph.id}-${chunk.id}`))
+    //     localforage.setItem(`${this.graph.id}-${chunk.id}`, chunk.encode())
+    // })
   }
 }

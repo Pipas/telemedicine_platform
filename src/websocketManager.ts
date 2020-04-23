@@ -5,10 +5,10 @@ import { Buffer } from 'buffer/'
 import { inflate } from 'pako'
 import { GraphManager } from './graphManager'
 import { TimedValues } from './models/timedValues'
-import { spawn, Thread, Worker } from "threads"
+import { spawn, Worker, Transfer, TransferDescriptor } from 'threads'
 
 type WebsocketMessage = TimedValues[]
-type readData = (data: Blob) => Promise<TimedValues[]>
+type readData = (buffer: TransferDescriptor<ArrayBuffer>) => Promise<TimedValues[]>
 
 enum GeneratorType {
   SineGenerator = 'SineGenerator',
@@ -40,8 +40,8 @@ class ChangeGraphMessage {
 }
 
 export class WebsocketManager extends EventDispatcher {
-  // private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
-  private websocketLocation = 'ws://localhost:12345'
+  private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
+  // private websocketLocation = 'ws://localhost:12345'
   private gui: dat.GUI
   private graphMessage: ChangeGraphMessage
   private graphManager: GraphManager
@@ -68,10 +68,9 @@ export class WebsocketManager extends EventDispatcher {
     })
 
     this.connection.addEventListener('message', e => {
-      // toBuffer(e.data, (err, buffer) => {
-      //   callback(this.decompressData((buffer as unknown) as Buffer))
-      // })
-      this.readData(e.data).then((values: TimedValues[]) => this.callback(values))
+      toBuffer(e.data, (err, buffer) => {
+        this.readData(Transfer(buffer.buffer)).then((values: TimedValues[]) => this.callback(values))
+      })
     })
 
     this.connection.addEventListener('error', () => {

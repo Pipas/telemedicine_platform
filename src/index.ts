@@ -6,7 +6,6 @@ import { WebsocketManager } from './websocketManager'
 import * as localforage from 'localforage'
 import { GeneratorManager } from './generator/generatorManager'
 import { TimedValues } from './models/timedValues'
-import { spawn, Thread, Worker } from 'threads'
 
 let graphManager: GraphManager
 let generator: GeneratorManager
@@ -40,9 +39,11 @@ function render(timestamp: number): void {
     }
 
     graphManager.addTimedValues(points)
+    graphManager.update()
+  } else {
+    // console.log('shit')
   }
 
-  graphManager.update()
   stats.end()
   previousRender = timestamp
   requestAnimationFrame(render)

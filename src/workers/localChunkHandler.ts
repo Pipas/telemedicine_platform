@@ -1,8 +1,9 @@
-import { expose } from 'threads/worker'
+import { expose, Transfer } from 'threads/worker'
 import * as localforage from 'localforage'
 import { BufferAttribute } from 'three'
 import { Buffer } from 'buffer/'
 import { deflate, inflate } from 'pako'
+import { TransferDescriptor } from 'threads'
 
 const localChunkHandler = {
   async store(positions: BufferAttribute, chunkId: number, graphId: number): Promise<void> {
@@ -22,10 +23,10 @@ const localChunkHandler = {
       localforage.setItem(`${graphId}-${chunkId}`, deflate(buffer))
     }
   },
-  async get(chunkId: number, graphId: number): Promise<Buffer> {
+  async get(chunkId: number, graphId: number): Promise<TransferDescriptor<ArrayBuffer>> {
     const encoded = (await localforage.getItem(`${graphId}-${chunkId}`)) as Uint8Array
     if (encoded == null) return
-    return Buffer.from(inflate(encoded))
+    return Transfer(inflate(encoded).buffer)
   },
 }
 

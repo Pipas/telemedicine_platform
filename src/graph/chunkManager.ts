@@ -2,10 +2,8 @@ import { Chunk } from '../models/chunk'
 import { Vector2 } from 'three'
 import { Graph } from './graph'
 import { Buffer } from 'buffer/'
-import { spawn, Thread, Worker } from 'threads'
+import { spawn, Worker, TransferDescriptor } from 'threads'
 import { LocalChunkHandler } from '../workers/localChunkHandler'
-
-import * as localforage from 'localforage'
 
 export class ChunkManager {
   private static chunkPadding = 3
@@ -38,7 +36,6 @@ export class ChunkManager {
 
   async initLocalChunkHandler(): Promise<void> {
     this.localChunkHandler = await spawn<LocalChunkHandler>(new Worker('../workers/localChunkHandler'))
-    console.log('local chunk defined')
   }
 
   addPoints(p: Vector2[]): void {
@@ -277,12 +274,9 @@ export class ChunkManager {
 
     const chunk = new Chunk(id, firstValue, lastValue)
 
-    localforage.getItem(`${this.graph.id}-${id}`).then((encoded: Uint8Array) => {
-      if (encoded == null) return
-      chunk.decode(encoded)
+    this.localChunkHandler.get(chunk.id, this.graph.id).then((buffer: TransferDescriptor<ArrayBuffer>) => {
+      chunk.fromBuffer(Buffer.from((buffer as unknown) as ArrayBuffer))
     })
-
-    this.localChunkHandler.get(chunk.id, this.graph.id).then((buffer: Buffer) => chunk.fromBuffer(buffer))
 
     return chunk
   }
@@ -290,9 +284,5 @@ export class ChunkManager {
   private storeChunk(chunk: Chunk): void {
     sessionStorage.setItem(`${this.graph.id}-${chunk.id}`, chunk.getLastValue().toString())
     this.localChunkHandler.store(chunk.getPositions(), chunk.id, this.graph.id)
-    // localforage.keys().then((keys: string[]) => {
-    //   if (!keys.includes(`${this.graph.id}-${chunk.id}`))
-    //     localforage.setItem(`${this.graph.id}-${chunk.id}`, chunk.encode())
-    // })
   }
 }

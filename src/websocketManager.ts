@@ -7,7 +7,6 @@ import { GraphManager } from './graphManager'
 import { TimedValues } from './models/timedValues'
 import { spawn, Worker, Transfer, TransferDescriptor } from 'threads'
 
-type WebsocketMessage = TimedValues[]
 type readData = (buffer: TransferDescriptor<ArrayBuffer>) => Promise<TimedValues[]>
 
 enum GeneratorType {
@@ -40,8 +39,8 @@ class ChangeGraphMessage {
 }
 
 export class WebsocketManager extends EventDispatcher {
-  private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
-  // private websocketLocation = 'ws://localhost:12345'
+  // private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
+  private websocketLocation = 'ws://localhost:12345'
   private gui: dat.GUI
   private graphMessage: ChangeGraphMessage
   private graphManager: GraphManager

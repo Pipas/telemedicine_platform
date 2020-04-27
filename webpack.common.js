@@ -3,7 +3,6 @@ const ThreadsPlugin = require('threads-plugin')
 
 module.exports = {
   entry: './src/index.ts',
-  devtool: 'inline-source-map',
   plugins: [new ThreadsPlugin()],
   module: {
     rules: [

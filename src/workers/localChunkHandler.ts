@@ -6,6 +6,14 @@ import { deflate, inflate } from 'pako'
 import { TransferDescriptor } from 'threads'
 
 const localChunkHandler = {
+  /**
+   * Stores a compressed buffer of the positions in a local IndexedDB
+   *
+   * @param {BufferAttribute} positions
+   * @param {number} chunkId
+   * @param {number} graphId
+   * @returns {Promise<void>}
+   */
   async store(positions: BufferAttribute, chunkId: number, graphId: number): Promise<void> {
     const keys = await localforage.keys()
     if (!keys.includes(`${graphId}-${chunkId}`)) {
@@ -23,6 +31,13 @@ const localChunkHandler = {
       localforage.setItem(`${graphId}-${chunkId}`, deflate(buffer))
     }
   },
+  /**
+   * Transfers ownership of a decoded buffer with position information from local IndexedDB
+   *
+   * @param {number} chunkId
+   * @param {number} graphId
+   * @returns {Promise<TransferDescriptor<ArrayBuffer>>}
+   */
   async get(chunkId: number, graphId: number): Promise<TransferDescriptor<ArrayBuffer>> {
     const encoded = (await localforage.getItem(`${graphId}-${chunkId}`)) as Uint8Array
     if (encoded == null) return

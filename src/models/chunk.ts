@@ -1,11 +1,16 @@
-import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial, ObjectLoader } from 'three'
-import { GraphLine } from './graphLine'
-import { deflate, inflate } from 'pako'
+import { Vector2, LineSegments, BufferGeometry, BufferAttribute, LineBasicMaterial } from 'three'
 import { Buffer } from 'buffer/'
 
+/**
+ * Represents a chunk of graph data
+ *
+ * @export
+ * @class Chunk
+ */
 export class Chunk {
-  static loader = new ObjectLoader()
   static material = new LineBasicMaterial({ color: 0x0000ff })
+
+  // Max points allowed in a chunk
   static maxPoints = 1000
 
   id: number
@@ -21,17 +26,97 @@ export class Chunk {
     this.line = this.createLineSegment()
   }
 
-  createLineSegment(): LineSegments {
-    const geometry = new BufferGeometry()
+  /**
+   * Adds points to the chunk LineSegment and updates it's geometry
+   *
+   * @param {Vector2[]} points
+   * @memberof Chunk
+   */
+  addPoints(points: Vector2[]): void {
+    const geometry = this.line.geometry as BufferGeometry
+    const range = geometry.drawRange.count
 
-    const positions = new Float32Array(Chunk.maxPoints * 2 * 3)
-    geometry.setAttribute('position', new BufferAttribute(positions, 3))
+    const positions = geometry.attributes.position as BufferAttribute
 
-    geometry.setDrawRange(0, 0)
+    let i = 0
+    for (; i < points.length - 1; i++) {
+      positions.set([points[i].x, points[i].y, 0, points[i + 1].x, points[i + 1].y, 0], range + i * 6)
+    }
 
-    return new LineSegments(geometry, GraphLine.material)
+    positions.needsUpdate = true
+
+    geometry.setDrawRange(0, range + i * 6)
+    geometry.computeBoundingSphere()
+    geometry.computeBoundingBox()
   }
 
+  /**
+   * Returns the first value of the chunk
+   *
+   * @returns {number}
+   * @memberof Chunk
+   */
+  getFirstValue(): number {
+    if (this.firstValue != undefined) return this.firstValue
+
+    return ((this.line.geometry as BufferGeometry).attributes.position as BufferAttribute).array[0]
+  }
+
+  /**
+   * Returns the last value of the chunk
+   *
+   * @returns {number}
+   * @memberof Chunk
+   */
+  getLastValue(): number {
+    if (this.lastValue != undefined) return this.lastValue
+
+    const geometry = this.line.geometry as BufferGeometry
+    return (geometry.attributes.position as BufferAttribute).array[geometry.drawRange.count - 3]
+  }
+
+  /**
+   * Returns the available space for points in the buffer
+   *
+   * @returns {number}
+   * @memberof Chunk
+   */
+  availableSpace(): number {
+    const range = (this.line.geometry as BufferGeometry).drawRange.count
+
+    return Chunk.maxPoints - range / 6
+  }
+
+  /**
+   * Returns true if the chunk is at full capacity
+   *
+   * @returns {boolean}
+   * @memberof Chunk
+   */
+  isFull(): boolean {
+    const range = (this.line.geometry as BufferGeometry).drawRange.count
+
+    return range / 6 == Chunk.maxPoints
+  }
+
+  /**
+   * Gets the chunks positions buffer
+   *
+   * @returns {BufferAttribute}
+   * @memberof Chunk
+   */
+  getPositions(): BufferAttribute {
+    const geometry = this.line.geometry as BufferGeometry
+
+    return geometry.attributes.position as BufferAttribute
+  }
+
+  /**
+   * Reconstructs the graph geometry from the saved buffer
+   *
+   * @param {Buffer} buffer
+   * @memberof Chunk
+   */
   fromBuffer(buffer: Buffer): void {
     const geometry = this.line.geometry as BufferGeometry
 
@@ -58,76 +143,20 @@ export class Chunk {
     geometry.computeBoundingBox()
   }
 
-  addPoints(points: Vector2[]): void {
-    const geometry = this.line.geometry as BufferGeometry
-    const range = geometry.drawRange.count
+  /**
+   * creates an empty Line Segment to be updated
+   *
+   * @returns {LineSegments}
+   * @memberof Chunk
+   */
+  private createLineSegment(): LineSegments {
+    const geometry = new BufferGeometry()
 
-    const positions = geometry.attributes.position as BufferAttribute
+    const positions = new Float32Array(Chunk.maxPoints * 2 * 3)
+    geometry.setAttribute('position', new BufferAttribute(positions, 3))
 
-    let i = 0
-    for (; i < points.length - 1; i++) {
-      positions.set([points[i].x, points[i].y, 0, points[i + 1].x, points[i + 1].y, 0], range + i * 6)
-    }
+    geometry.setDrawRange(0, 0)
 
-    positions.needsUpdate = true
-
-    geometry.setDrawRange(0, range + i * 6)
-    geometry.computeBoundingSphere()
-    geometry.computeBoundingBox()
-  }
-
-  getFirstValue(): number {
-    if (this.firstValue != undefined) return this.firstValue
-
-    return ((this.line.geometry as BufferGeometry).attributes.position as BufferAttribute).array[0]
-  }
-
-  getLastValue(): number {
-    if (this.lastValue != undefined) return this.lastValue
-
-    const geometry = this.line.geometry as BufferGeometry
-    return (geometry.attributes.position as BufferAttribute).array[geometry.drawRange.count - 3]
-  }
-
-  availableSpace(): number {
-    const range = (this.line.geometry as BufferGeometry).drawRange.count
-
-    return Chunk.maxPoints - range / 6
-  }
-
-  isFull(): boolean {
-    const range = (this.line.geometry as BufferGeometry).drawRange.count
-
-    return range / 6 == Chunk.maxPoints
-  }
-
-  getPositions(): BufferAttribute {
-    const geometry = this.line.geometry as BufferGeometry
-
-    return geometry.attributes.position as BufferAttribute
-  }
-
-  encode(): Uint8Array {
-    const geometry = this.line.geometry as BufferGeometry
-
-    const positions = geometry.attributes.position as BufferAttribute
-
-    const buffer = Buffer.alloc(4 * ((positions.array.length / 6) * 2 + 2))
-    let offset = 0
-    for (let i = 0; i < positions.array.length; i += 6) {
-      buffer.writeFloatBE(positions.array[i], offset)
-      buffer.writeFloatBE(positions.array[i + 1], offset + 4)
-      offset += 8
-    }
-
-    buffer.writeFloatBE(positions.array[positions.array.length - 3], offset)
-    buffer.writeFloatBE(positions.array[positions.array.length - 2], offset + 4)
-
-    return deflate(buffer)
-  }
-
-  decode(encoded: Uint8Array): void {
-    const buffer = Buffer.from(inflate(encoded))
-    this.fromBuffer(buffer)
+    return new LineSegments(geometry, Chunk.material)
   }
 }

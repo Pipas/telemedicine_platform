@@ -41,7 +41,7 @@ function render(timestamp: number): void {
     graphManager.addTimedValues(points)
   }
 
-  graphManager.update()
+  graphManager.render()
   stats.end()
   previousRender = timestamp
   requestAnimationFrame(render)

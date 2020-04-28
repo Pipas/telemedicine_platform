@@ -2,6 +2,13 @@ import { Graph } from '../graph/graph'
 import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
 
+/**
+ * Represents the graph Y Axis and hadles it's related logic
+ *
+ * @export
+ * @class YAxis
+ * @extends {Axis}
+ */
 export class YAxis extends Axis {
   private stepMultipliers = [1, 2.5, 5]
 
@@ -12,7 +19,13 @@ export class YAxis extends Axis {
     this.buildSteps()
   }
 
+  /**
+   * Called when Y zoom is changed
+   *
+   * @memberof YAxis
+   */
   updateScale(): void {
+    // If a new step is calculated rebuilds steps, else repositions them
     if (this.calculateNewStep()) {
       while (this.steps.length > 0) {
         this.steps.pop().remove()
@@ -25,12 +38,25 @@ export class YAxis extends Axis {
     }
   }
 
+  /**
+   * Moves steps horizontally according to delta so they stay visible when the graph window moves
+   *
+   * @param {number} delta
+   * @memberof YAxis
+   */
   moveSteps(delta: number): void {
     this.steps.forEach(step => {
       step.group.position.x += delta * this.graph.xZoom
     })
   }
 
+  /**
+   * Returns true if a new step value is calculated
+   *
+   * @private
+   * @returns {boolean}
+   * @memberof YAxis
+   */
   private calculateNewStep(): boolean {
     let newStepSize = this.stepSize
     const magnitude = Math.pow(10, Math.floor(Math.log((this.graph.visibleRange.maxY * 2) / 3) / Math.LN10))
@@ -46,10 +72,24 @@ export class YAxis extends Axis {
     return rebuildSteps
   }
 
+  /**
+   * Returns a new step for value
+   *
+   * @private
+   * @param {number} value
+   * @returns {AxisStep}
+   * @memberof YAxis
+   */
   private getNewStep(value: number): AxisStep {
     return new AxisStep(this.graph, StepDirection.vertical, value, false)
   }
 
+  /**
+   * Builds visible steps
+   *
+   * @private
+   * @memberof YAxis
+   */
   private buildSteps(): void {
     for (let i = this.stepSize; i < this.graph.visibleRange.maxY; i += this.stepSize) {
       this.steps.push(this.getNewStep(i))

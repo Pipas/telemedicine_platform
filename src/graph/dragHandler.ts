@@ -1,19 +1,23 @@
 import { Vector2, EventDispatcher } from 'three'
 
-export class MouseDragger extends EventDispatcher {
+/**
+ * Class that handles user input to make dragging actions possible
+ *
+ * @export
+ * @class DragHandler
+ * @extends {EventDispatcher}
+ */
+export class DragHandler extends EventDispatcher {
+  // The element the user drags
   private element: HTMLElement
-  private mousePosition: Vector2
+  private dragPosition: Vector2
 
   constructor(element: HTMLElement) {
     super()
     this.element = element
 
-    this.attachEvents()
-  }
-
-  attachEvents(): void {
+    // If the browser has touch capabilities
     if ('ontouchstart' in document.documentElement) {
-      console.log('touch yall')
       document.addEventListener('touchstart', this.onDocumentTouchStart, false)
       document.addEventListener('touchmove', this.onDocumentTouchMove, false)
       document.addEventListener('touchend', this.onDocumentTouchEnd, false)
@@ -24,62 +28,62 @@ export class MouseDragger extends EventDispatcher {
     document.addEventListener('mouseup', this.onDocumentMouseUp, false)
   }
 
-  onDocumentTouchStart = (event: TouchEvent): void => {
+  private onDocumentTouchStart = (event: TouchEvent): void => {
     if (!this.touchInElement(event)) return
 
     event.preventDefault()
 
-    this.mousePosition = this.getTouchPosition(event)
+    this.dragPosition = this.getTouchPosition(event)
   }
 
-  onDocumentTouchMove = (event: TouchEvent): void => {
-    if (this.mousePosition == null) return
+  private onDocumentTouchMove = (event: TouchEvent): void => {
+    if (this.dragPosition == null) return
 
     event.preventDefault()
 
     const newPosition = this.getTouchPosition(event)
 
-    if (newPosition.equals(this.mousePosition)) return
+    if (newPosition.equals(this.dragPosition)) return
 
     this.dispatchEvent({
       type: 'drag',
-      delta: new Vector2(newPosition.x - this.mousePosition.x, newPosition.y - this.mousePosition.y),
+      delta: new Vector2(newPosition.x - this.dragPosition.x, newPosition.y - this.dragPosition.y),
     })
 
-    this.mousePosition = newPosition
+    this.dragPosition = newPosition
   }
 
-  onDocumentTouchEnd = (): void => {
-    this.mousePosition = null
+  private onDocumentTouchEnd = (): void => {
+    this.dragPosition = null
   }
 
-  onDocumentMouseDown = (event: MouseEvent): void => {
+  private onDocumentMouseDown = (event: MouseEvent): void => {
     if (!this.mouseInElement(event)) return
 
     event.preventDefault()
 
-    this.mousePosition = this.getMousePosition(event)
+    this.dragPosition = this.getMousePosition(event)
   }
 
-  onDocumentMouseMove = (event: MouseEvent): void => {
-    if (this.mousePosition == null) return
+  private onDocumentMouseMove = (event: MouseEvent): void => {
+    if (this.dragPosition == null) return
 
     event.preventDefault()
 
     const newPosition = this.getMousePosition(event)
 
-    if (newPosition.equals(this.mousePosition)) return
+    if (newPosition.equals(this.dragPosition)) return
 
     this.dispatchEvent({
       type: 'drag',
-      delta: new Vector2(newPosition.x - this.mousePosition.x, newPosition.y - this.mousePosition.y),
+      delta: new Vector2(newPosition.x - this.dragPosition.x, newPosition.y - this.dragPosition.y),
     })
 
-    this.mousePosition = newPosition
+    this.dragPosition = newPosition
   }
 
-  onDocumentMouseUp = (): void => {
-    this.mousePosition = null
+  private onDocumentMouseUp = (): void => {
+    this.dragPosition = null
   }
 
   private touchInElement(event: TouchEvent): boolean {

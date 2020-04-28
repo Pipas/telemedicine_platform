@@ -16,6 +16,12 @@ export enum StepDirection {
   horizontal,
 }
 
+/**
+ * Represents a labeled step in an axis and hadles it's related logic
+ *
+ * @export
+ * @class AxisStep
+ */
 export class AxisStep {
   public static material = new LineBasicMaterial({ color: 0x000000 })
   private static digits: Map<string, Sprite>
@@ -40,20 +46,91 @@ export class AxisStep {
     this.draw()
   }
 
+  /**
+   * Returns if the step is visible in the graph
+   *
+   * @returns {boolean}
+   * @memberof AxisStep
+   */
   isVisible(): boolean {
     return this.direction == StepDirection.horizontal
       ? this.graph.visibleRange.containsX(this.value)
       : this.graph.visibleRange.containsY(this.value)
   }
 
-  draw(): void {
+  /**
+   * Positions the step using the graphs zoom values
+   *
+   * @memberof AxisStep
+   */
+  position(): void {
+    if (this.direction == StepDirection.horizontal) {
+      this.group.position.x = this.value * this.graph.xZoom
+      this.group.position.y = 0
+    } else {
+      this.group.position.x = this.graph.visibleRange.minX * this.graph.xZoom
+      this.group.position.y = this.value * this.graph.yZoom
+    }
+  }
+
+  /**
+   * Removes the step from the graph scene
+   *
+   * @memberof AxisStep
+   */
+  remove(): void {
+    this.graph.scene.remove(this.group)
+  }
+
+  /**
+   * Initializes the digits sprite map
+   *
+   * @private
+   * @memberof AxisStep
+   */
+  private initDigits(): void {
+    if (AxisStep.digits == null) {
+      const digits = '0123456789-:,.'
+
+      AxisStep.digits = new Map<string, Sprite>()
+      AxisStep.digitWidth = 11 / 16 // From the sprite sizes
+
+      for (let i = 0; i < digits.length; i++) {
+        const texture = new TextureLoader().load('images/digits.png')
+        texture.minFilter = LinearFilter
+
+        texture.repeat.x = 1 / digits.length
+
+        texture.offset.x = (i * (154 / digits.length)) / 154
+
+        const sprite = new Sprite(new SpriteMaterial({ map: texture }))
+        sprite.scale.set(AxisStep.digitWidth, 1, 1)
+
+        AxisStep.digits.set(digits.split('')[i], sprite)
+      }
+    }
+  }
+
+  /**
+   * Creates a step and adds it to the graph scene to be rendered
+   *
+   * @private
+   * @memberof AxisStep
+   */
+  private draw(): void {
     this.drawLine()
     this.drawNumber()
-
     this.position()
+
     this.graph.scene.add(this.group)
   }
 
+  /**
+   * Creates the line segment portion of the step
+   *
+   * @private
+   * @memberof AxisStep
+   */
   private drawLine(): void {
     let firstPoint: Vector3
     let secondPoint: Vector3
@@ -73,29 +150,12 @@ export class AxisStep {
     this.group.add(line)
   }
 
-  private initDigits(): void {
-    if (AxisStep.digits == null) {
-      const digits = '0123456789-:,.'
-
-      AxisStep.digits = new Map<string, Sprite>()
-      AxisStep.digitWidth = 11 / 16
-
-      for (let i = 0; i < digits.length; i++) {
-        const texture = new TextureLoader().load('images/digits.png')
-        texture.minFilter = LinearFilter
-
-        texture.repeat.x = 1 / digits.length
-
-        texture.offset.x = (i * (154 / digits.length)) / 154
-
-        const sprite = new Sprite(new SpriteMaterial({ map: texture }))
-        sprite.scale.set(AxisStep.digitWidth, 1, 1)
-
-        AxisStep.digits.set(digits.split('')[i], sprite)
-      }
-    }
-  }
-
+  /**
+   * Creates the number segment of the step
+   *
+   * @private
+   * @memberof AxisStep
+   */
   private drawNumber(): void {
     const valueDigits = this.isTime ? this.getValueAsTime().split('') : this.value.toString().split('')
 
@@ -113,29 +173,17 @@ export class AxisStep {
     })
   }
 
+  /**
+   * Returns a string with the formatted time from a value of seconds
+   *
+   * @private
+   * @returns {string}
+   * @memberof AxisStep
+   */
   private getValueAsTime(): string {
     const seconds = this.value < 60 ? this.value : this.value % 60
     const minutes = this.value < 60 ? 0 : (this.value - seconds) / 60
 
     return minutes.toString() + ':' + ('0' + seconds).slice(-2)
-  }
-
-  position(): void {
-    if (this.direction == StepDirection.horizontal) {
-      this.group.position.x = this.value * this.graph.xZoom
-      this.group.position.y = 0
-    } else {
-      this.group.position.x = this.graph.visibleRange.minX * this.graph.xZoom
-      this.group.position.y = this.value * this.graph.yZoom
-    }
-  }
-
-  remove(): void {
-    this.graph.scene.remove(this.group)
-  }
-
-  redraw(): void {
-    this.remove()
-    this.draw()
   }
 }

@@ -4,8 +4,14 @@ import { YAxis } from './yAxis'
 import { VisibleRange } from '../models/visibleRange'
 import { ChunkManager } from './chunkManager'
 import { GraphControls } from './graphControls'
-import { MouseDragger } from './mouseDragger'
+import { DragHandler } from './dragHandler'
 
+/**
+ * Handles logic for each individual graph
+ *
+ * @export
+ * @class Graph
+ */
 export class Graph {
   // Graph constants
   private static cameraDistance = 10
@@ -21,7 +27,7 @@ export class Graph {
   element: HTMLDivElement
   private camera: PerspectiveCamera
   private controls: GraphControls
-  private mouseDragger: MouseDragger
+  private dragHandler: DragHandler
 
   // Graph settings
   private autoMoveHorizontalRange = true
@@ -59,7 +65,7 @@ export class Graph {
   }
 
   /**
-   *Renders the graph with renderer
+   * Renders the graph with renderer
    *
    * @param {WebGLRenderer} renderer
    * @memberof Graph
@@ -107,23 +113,63 @@ export class Graph {
   }
 
   /**
-   *Initializes the MouseDragger class that manages user interaction with the graph
+   * Sets if the camera should follow the new displaying values
+   *
+   * @param {boolean} follow
+   * @memberof Graph
+   */
+  setAutoMoveHorizontalRange(follow: boolean): void {
+    this.autoMoveHorizontalRange = follow
+
+    this.controls.setFollowLineButtonVisability(!follow)
+  }
+
+  /**
+   * Sets if the vertical range of the graph is automatically updated with new values
+   *
+   * @param {boolean} update
+   * @memberof Graph
+   */
+  setAutoUpdateVerticalRange(update: boolean): void {
+    this.autoUpdateVerticalRange = update
+
+    this.controls.setUpdateVerticalRangeButtonVisability(!update)
+  }
+
+  increaseHorizontalZoom(): void {
+    this.updateHorizontalZoom(1.2)
+  }
+
+  decreaseHorizontalZoom(): void {
+    this.updateHorizontalZoom(1 / 1.2)
+  }
+
+  increaseVerticalZoom(): void {
+    this.updateVerticalZoom(1.2)
+  }
+
+  decreaseVerticalZoom(): void {
+    this.updateVerticalZoom(1 / 1.2)
+  }
+
+  /**
+   * Initializes the MouseDragger class that manages user interaction with the graph
    *
    * @private
    * @memberof Graph
    */
   private initMouseDragger(): void {
-    this.mouseDragger = new MouseDragger(this.element)
+    this.dragHandler = new DragHandler(this.element)
 
-    this.mouseDragger.addEventListener('drag', event => {
+    this.dragHandler.addEventListener('drag', event => {
       this.setAutoMoveHorizontalRange(false)
 
-      this.moveHorizontalRange(-event.delta.x * (this.visibleRange.width() / this.element.offsetWidth))
+      this.moveHorizontalRange(-event.delta.x * (this.visibleRange.getWidth() / this.element.offsetWidth))
     })
   }
 
   /**
-   *Initializes the Camera for the graph and it's related parameters
+   * Initializes the Camera for the graph and it's related parameters
    *
    * @private
    * @memberof Graph
@@ -152,7 +198,7 @@ export class Graph {
   }
 
   /**
-   *Initializes the graph specific scene
+   * Initializes the graph specific scene
    *
    * @private
    * @memberof Graph
@@ -163,7 +209,7 @@ export class Graph {
   }
 
   /**
-   *Initializes the Plot Line a group of Objects that scale is applied according to the zoom values
+   * Initializes the Plot Line a group of Objects that scale is applied according to the zoom values
    *
    * @private
    * @memberof Graph
@@ -180,46 +226,6 @@ export class Graph {
   }
 
   /**
-   *Sets if the camera should follow the new displaying values
-   *
-   * @param {boolean} follow
-   * @memberof Graph
-   */
-  setAutoMoveHorizontalRange(follow: boolean): void {
-    this.autoMoveHorizontalRange = follow
-
-    this.controls.setFollowLineButtonVisability(!follow)
-  }
-
-  /**
-   *Sets if the vertical range of the graph is automatically updated with new values
-   *
-   * @param {boolean} update
-   * @memberof Graph
-   */
-  setAutoUpdateVerticalRange(update: boolean): void {
-    this.autoUpdateVerticalRange = update
-
-    this.controls.setUpdateVerticalRangeButtonVisability(!update)
-  }
-
-  increaseHorizontalZoom(): void {
-    this.updateHorizontalZoom(1.2)
-  }
-
-  decreaseHorizontalZoom(): void {
-    this.updateHorizontalZoom(1 / 1.2)
-  }
-
-  increaseVerticalZoom(): void {
-    this.updateVerticalZoom(1.2)
-  }
-
-  decreaseVerticalZoom(): void {
-    this.updateVerticalZoom(1 / 1.2)
-  }
-
-  /**
    * Updates the aspect ratio of the camera and adjust scene values accordingly if element has changed size
    *
    * @private
@@ -231,7 +237,7 @@ export class Graph {
     const ratio = newAspect / this.camera.aspect
 
     // Calculate added delta based on the ratio of widths
-    const delta = this.visibleRange.width() * ratio - this.visibleRange.width()
+    const delta = this.visibleRange.getWidth() * ratio - this.visibleRange.getWidth()
     this.visibleRange.maxX += delta
 
     // Adjust camera to new aspect and move to place
@@ -429,7 +435,7 @@ export class Graph {
     // Moves horizontal range if it should
     const delta = this.chunkManager.lastPoint.x - this.visibleRange.maxX
     if (this.autoMoveHorizontalRange && delta > 0) {
-      if (this.visibleRange.width() < delta) {
+      if (this.visibleRange.getWidth() < delta) {
         this.jumpToLastPoint(delta)
       } else {
         this.moveHorizontalRange(delta)

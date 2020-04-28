@@ -1,5 +1,11 @@
 import { Graph } from './graph'
 
+/**
+ * Handles the display and interaction with the graph controls
+ *
+ * @export
+ * @class GraphControls
+ */
 export class GraphControls {
   private graph: Graph
   private element: HTMLDivElement
@@ -11,10 +17,7 @@ export class GraphControls {
   constructor(graph: Graph, element: HTMLDivElement) {
     this.element = element
     this.graph = graph
-    this.initControls()
-  }
 
-  private initControls(): void {
     this.controlDiv = document.createElement('div')
     this.controlDiv.setAttribute('class', 'controls')
     this.element.appendChild(this.controlDiv)
@@ -29,11 +32,23 @@ export class GraphControls {
     this.createUpdateVerticalRangeButton()
   }
 
+  /**
+   * Sets the visibility of the follow line button
+   *
+   * @param {boolean} visability
+   * @memberof GraphControls
+   */
   setFollowLineButtonVisability(visability: boolean): void {
     if (visability) this.followLine.style.display = 'block'
     else this.followLine.style.display = 'none'
   }
 
+  /**
+   * Sets the visibility of the auto update vertical range button
+   *
+   * @param {boolean} visability
+   * @memberof GraphControls
+   */
   setUpdateVerticalRangeButtonVisability(visability: boolean): void {
     if (visability) this.updateVerticalRange.style.display = 'block'
     else this.updateVerticalRange.style.display = 'none'

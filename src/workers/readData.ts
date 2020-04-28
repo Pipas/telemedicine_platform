@@ -4,6 +4,14 @@ import { inflate } from 'pako'
 import { TimedValues } from '../models/timedValues'
 import { TransferDescriptor } from 'threads'
 
+/**
+ * Decompresses and reads the data from a buffer and returns an array of TimedValues
+ *
+ * @param {BufferAttribute} positions
+ * @param {number} chunkId
+ * @param {number} graphId
+ * @returns {Promise<void>}
+ */
 expose(function readData(buffer: TransferDescriptor<ArrayBuffer>): Promise<TimedValues[]> {
   return new Promise<TimedValues[]>(resolve => {
     const decompresssed = Buffer.from(inflate((buffer as unknown) as Buffer))

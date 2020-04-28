@@ -3,8 +3,17 @@ import { Graph } from '../graph/graph'
 import { AxisStep, StepDirection } from '../models/axisStep'
 import { Axis } from './axis'
 
+/**
+ * Represents the graph X Axis and hadles it's related logic
+ *
+ * @export
+ * @class XAxis
+ * @extends {Axis}
+ */
 export class XAxis extends Axis {
+  // In seconds the values that a scale step can take
   private static stepPossibilities = [1, 2, 5, 10, 30, 60]
+
   private static windowPadding = 2
 
   constructor(graph: Graph) {
@@ -14,7 +23,14 @@ export class XAxis extends Axis {
     this.buildSteps()
   }
 
+  /**
+   * Called when graphs visible range moved by a delta ammount
+   *
+   * @param {number} delta
+   * @memberof XAxis
+   */
   moveScale(delta: number): void {
+    // If no steps visible rebuild steps
     if (this.steps.length == 0) {
       this.rebuildSteps()
       return
@@ -26,6 +42,7 @@ export class XAxis extends Axis {
     const newFirstStep = this.getClosestStep(this.graph.visibleRange.minX - padding)
     const newLastStep = this.getClosestStep(this.graph.visibleRange.maxX + padding)
 
+    // If no existing steps are repurposed, rebuild steps
     if (newFirstStep > lastStep || newLastStep < firstStep) {
       this.rebuildSteps()
       return
@@ -53,13 +70,20 @@ export class XAxis extends Axis {
     }
   }
 
+  /**
+   * Called when the visible range is changed by a zoom or viewport change
+   *
+   * @memberof XAxis
+   */
   updateScale(): void {
+    // If step size changes rebuilds steps
     if (this.calculateNewStep() || this.steps.length == 0) {
       this.rebuildSteps()
     } else {
       let i = this.steps.length
       while (i--) {
         const step = this.steps[i]
+        // If step is still visible, repositions it, if it isn't removes it
         if (step.value > this.graph.visibleRange.minX && step.value < this.graph.visibleRange.maxX) {
           step.position()
         } else {
@@ -82,10 +106,21 @@ export class XAxis extends Axis {
     }
   }
 
+  /**
+   * Moves the axis line a delta ammount
+   *
+   * @param {number} delta
+   * @memberof XAxis
+   */
   moveAxis(delta: number): void {
     this.axis.position.x += delta * this.graph.xZoom
   }
 
+  /**
+   * Updates the size of the axis line to graph window size
+   *
+   * @memberof XAxis
+   */
   updateAxisSize(): void {
     const axisGeometry = this.axis.geometry as BufferGeometry
     const positions = axisGeometry.attributes.position as BufferAttribute
@@ -94,6 +129,13 @@ export class XAxis extends Axis {
     positions.needsUpdate = true
   }
 
+  /**
+   * Calculates if it should change the step size
+   *
+   * @private
+   * @returns {boolean}
+   * @memberof XAxis
+   */
   private calculateNewStep(): boolean {
     const stepWidth =
       (this.stepSize * this.graph.element.offsetWidth) / (this.graph.visibleRange.maxX - this.graph.visibleRange.minX)
@@ -115,6 +157,12 @@ export class XAxis extends Axis {
     return false
   }
 
+  /**
+   * Builds the axis line
+   *
+   * @private
+   * @memberof XAxis
+   */
   private buildAxis(): void {
     const geometry = new BufferGeometry().setFromPoints([
       new Vector3(this.graph.visibleRange.minX, 0, 0),
@@ -127,6 +175,12 @@ export class XAxis extends Axis {
     this.graph.scene.add(this.axis)
   }
 
+  /**
+   * Rebuilds all steps
+   *
+   * @private
+   * @memberof XAxis
+   */
   private rebuildSteps(): void {
     while (this.steps.length > 0) {
       this.steps.pop().remove()
@@ -134,6 +188,12 @@ export class XAxis extends Axis {
     this.buildSteps()
   }
 
+  /**
+   * Builds visible steps
+   *
+   * @private
+   * @memberof XAxis
+   */
   private buildSteps(): void {
     for (
       let i = this.getClosestStep(this.graph.visibleRange.minX);
@@ -144,10 +204,26 @@ export class XAxis extends Axis {
     }
   }
 
+  /**
+   * Returns a new step for value
+   *
+   * @private
+   * @param {number} value
+   * @returns {AxisStep}
+   * @memberof XAxis
+   */
   private getStep(value: number): AxisStep {
     return new AxisStep(this.graph, StepDirection.horizontal, value, true)
   }
 
+  /**
+   * Calculates the closes step to a particuler value
+   *
+   * @private
+   * @param {number} value
+   * @returns {number}
+   * @memberof XAxis
+   */
   private getClosestStep(value: number): number {
     let initialStep
     const roundMin = Math.ceil(value)

@@ -39,11 +39,9 @@ function render(timestamp: number): void {
     }
 
     graphManager.addTimedValues(points)
-    graphManager.update()
-  } else {
-    // console.log('shit')
   }
 
+  graphManager.update()
   stats.end()
   previousRender = timestamp
   requestAnimationFrame(render)

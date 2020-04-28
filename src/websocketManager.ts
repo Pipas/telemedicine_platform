@@ -39,8 +39,8 @@ class ChangeGraphMessage {
 }
 
 export class WebsocketManager extends EventDispatcher {
-  // private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
-  private websocketLocation = 'ws://localhost:12345'
+  private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
+  // private websocketLocation = 'ws://localhost:12345'
   private gui: dat.GUI
   private graphMessage: ChangeGraphMessage
   private graphManager: GraphManager

@@ -17,7 +17,7 @@ let previousRender: number
 
 const generatorCallback = (points: Vector2[]): void => graphManager.addPoints(points)
 const webSocketCallback = (points: TimedValues[]): void => {
-  pointBuffer = pointBuffer.concat(points)
+  pointBuffer = [...pointBuffer, ...points]
 }
 
 function render(timestamp: number): void {

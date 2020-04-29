@@ -53,7 +53,7 @@ export class Graph {
 
     this.initScene()
     this.initCamera()
-    this.initMouseDragger()
+    this.initDragHandler()
     this.initPlotLine()
 
     this.xAxis = new XAxis(this)
@@ -158,11 +158,11 @@ export class Graph {
    * @private
    * @memberof Graph
    */
-  private initMouseDragger(): void {
+  private initDragHandler(): void {
     this.dragHandler = new DragHandler(this.element)
 
     this.dragHandler.addEventListener('drag', event => {
-      this.setAutoMoveHorizontalRange(false)
+      if (this.autoMoveHorizontalRange) this.setAutoMoveHorizontalRange(false)
 
       this.moveHorizontalRange(-event.delta.x * (this.visibleRange.getWidth() / this.element.offsetWidth))
     })

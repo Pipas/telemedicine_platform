@@ -423,9 +423,15 @@ export class ChunkManager {
     const chunk = new Chunk(id, firstValue, lastValue)
 
     // Requests chunk data from localChunkHandler and updates chunk with said data when retreived
-    this.localChunkHandler.get(chunk.id, this.graph.id).then((buffer: TransferDescriptor<ArrayBuffer>) => {
-      chunk.fromBuffer(Buffer.from((buffer as unknown) as ArrayBuffer))
-    })
+    const rebuildChunk = (buffer: TransferDescriptor<ArrayBuffer>): void => {
+      if (buffer == undefined) {
+        this.localChunkHandler.get(chunk.id, this.graph.id).then(rebuildChunk)
+      } else {
+        chunk.fromBuffer(Buffer.from((buffer as unknown) as ArrayBuffer))
+      }
+    }
+
+    this.localChunkHandler.get(chunk.id, this.graph.id).then(rebuildChunk)
 
     return chunk
   }

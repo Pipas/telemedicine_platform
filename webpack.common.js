@@ -2,7 +2,10 @@ const path = require('path')
 const ThreadsPlugin = require('threads-plugin')
 
 module.exports = {
-  entry: './src/index.ts',
+  entry: {
+    demo: './src/index.ts',
+    library: './src/webTelemedicineLibrary.ts',
+  },
   plugins: [new ThreadsPlugin()],
   module: {
     rules: [
@@ -22,7 +25,7 @@ module.exports = {
     extensions: ['.ts', '.js'],
   },
   output: {
-    filename: 'bundle.js',
+    filename: '[name].bundle.js',
     path: path.resolve(__dirname, 'public'),
   },
 }

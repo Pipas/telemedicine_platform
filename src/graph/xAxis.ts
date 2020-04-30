@@ -12,7 +12,8 @@ import { Axis } from './axis'
  */
 export class XAxis extends Axis {
   // In seconds the values that a scale step can take
-  private static stepPossibilities = [1, 2, 5, 10, 30, 60]
+  private static stepPossibilities = [1, 2, 5, 10, 30, 60, 300, 600, 1800, 3600]
+  private static minStepWidth = 90
 
   private static windowPadding = 2
 
@@ -137,24 +138,22 @@ export class XAxis extends Axis {
    * @memberof XAxis
    */
   private calculateNewStep(): boolean {
-    const stepWidth =
-      (this.stepSize * this.graph.element.offsetWidth) / (this.graph.visibleRange.maxX - this.graph.visibleRange.minX)
+    const stepWidth = (this.stepSize * this.graph.element.offsetWidth) / this.graph.visibleRange.getWidth()
+    const stepIndex = XAxis.stepPossibilities.findIndex(step => step == this.stepSize)
+    const nextStep = XAxis.stepPossibilities[stepIndex + 1] ?? 999999999
+    const previousStep = XAxis.stepPossibilities[stepIndex - 1] ?? 999999999
 
-    if (stepWidth < 50) {
-      const nextStep = XAxis.stepPossibilities[XAxis.stepPossibilities.findIndex(step => step == this.stepSize) + 1]
-      if (nextStep == undefined) return false
-      this.stepSize = nextStep
+    const nextStepDelta = XAxis.minStepWidth - (nextStep * stepWidth) / this.stepSize
+    const previousStepDelta = XAxis.minStepWidth - (previousStep * stepWidth) / this.stepSize
+    const currentStepDelta = XAxis.minStepWidth - stepWidth
 
-      return true
-    } else if (stepWidth > 100) {
-      const nextStep = XAxis.stepPossibilities[XAxis.stepPossibilities.findIndex(step => step == this.stepSize) - 1]
-      if (nextStep == undefined) return false
-      this.stepSize = nextStep
+    const minimumDelta = Math.max(...[nextStepDelta, previousStepDelta, currentStepDelta].filter(val => val < 0))
 
+    if (minimumDelta == currentStepDelta) return false
+    else {
+      this.stepSize = minimumDelta == nextStepDelta ? nextStep : previousStep
       return true
     }
-
-    return false
   }
 
   /**

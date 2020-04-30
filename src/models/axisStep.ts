@@ -26,6 +26,7 @@ export class AxisStep {
   public static material = new LineBasicMaterial({ color: 0x000000 })
   private static digits: Map<string, Sprite>
   private static digitWidth: number
+  private static digitScale: number
 
   private graph: Graph
   private direction: StepDirection
@@ -94,6 +95,7 @@ export class AxisStep {
 
       AxisStep.digits = new Map<string, Sprite>()
       AxisStep.digitWidth = 11 / 16 // From the sprite sizes
+      AxisStep.digitScale = 256 / this.graph.element.offsetHeight
 
       for (let i = 0; i < digits.length; i++) {
         const texture = new TextureLoader().load('images/digits.png')
@@ -104,7 +106,7 @@ export class AxisStep {
         texture.offset.x = (i * (154 / digits.length)) / 154
 
         const sprite = new Sprite(new SpriteMaterial({ map: texture }))
-        sprite.scale.set(AxisStep.digitWidth, 1, 1)
+        sprite.scale.set(AxisStep.digitWidth * AxisStep.digitScale, AxisStep.digitScale, 1)
 
         AxisStep.digits.set(digits.split('')[i], sprite)
       }
@@ -137,10 +139,10 @@ export class AxisStep {
 
     if (this.direction === StepDirection.horizontal) {
       firstPoint = new Vector3(0, 0, 0)
-      secondPoint = new Vector3(0, -0.5, 0)
+      secondPoint = new Vector3(0, -0.5 * AxisStep.digitScale, 0)
     } else {
       firstPoint = new Vector3(0, 0, 0)
-      secondPoint = new Vector3(0.5, 0, 0)
+      secondPoint = new Vector3(0.5 * AxisStep.digitScale, 0, 0)
     }
 
     const geometry = new BufferGeometry().setFromPoints([firstPoint, secondPoint])
@@ -162,10 +164,14 @@ export class AxisStep {
     valueDigits.forEach((digit, i) => {
       const spriteDigit = AxisStep.digits.get(digit).clone()
       if (this.direction === StepDirection.horizontal) {
-        spriteDigit.position.x = -((AxisStep.digitWidth * (valueDigits.length - 1)) / 2) + AxisStep.digitWidth * i
-        spriteDigit.position.y = -1.4
+        spriteDigit.position.x =
+          (-((AxisStep.digitWidth * (valueDigits.length - 1)) / 2) + AxisStep.digitWidth * i) * AxisStep.digitScale
+        spriteDigit.position.y = -1.4 * AxisStep.digitScale
       } else {
-        spriteDigit.position.x = 1 + (AxisStep.digitWidth * (valueDigits.length - 1)) / 2 + AxisStep.digitWidth * i
+        spriteDigit.position.x =
+          AxisStep.digitScale +
+          ((AxisStep.digitWidth * (valueDigits.length - 1)) / 2) * AxisStep.digitScale +
+          AxisStep.digitWidth * i * AxisStep.digitScale
         spriteDigit.position.y = 0
       }
 

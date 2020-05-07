@@ -14,7 +14,7 @@ export class GeneratorManager {
   private initTime: number
 
   private generating = false
-  private frequency = 1000
+  private frequency = 60
 
   private folders: dat.GUI[]
 

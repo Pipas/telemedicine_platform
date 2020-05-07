@@ -6,7 +6,7 @@ type readData = (buffer: TransferDescriptor<ArrayBuffer>) => Promise<TimedValues
 
 export class WebsocketManager {
   // private websocketLocation = 'wss://protected-mesa-09317.herokuapp.com'
-  private websocketLocation = 'ws://localhost:12345'
+  private websocketLocation = 'ws://192.168.1.73:12345'
   private readData: readData
   private callback: (points: TimedValues[]) => void
   private onError: () => void

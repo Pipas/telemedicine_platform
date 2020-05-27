@@ -1,7 +1,7 @@
 import { ValueGenerator, GeneratorType } from './valueGenerator'
 import { Vector2 } from 'three'
 import * as dat from 'dat.gui'
-import { GraphManager } from '../graphManager'
+import { GraphManager } from '../graph/graphManager'
 
 export class GeneratorManager {
   private gui: dat.GUI

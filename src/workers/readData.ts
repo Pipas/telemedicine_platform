@@ -1,7 +1,7 @@
 import { expose } from 'threads/worker'
 import { Buffer } from 'buffer/'
 import { inflate } from 'pako'
-import { TimedValues } from '../models/timedValues'
+import { TimedValues } from '../graph/timedValues'
 import { TransferDescriptor } from 'threads'
 
 /**

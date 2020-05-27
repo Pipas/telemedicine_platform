@@ -3,8 +3,8 @@ const ThreadsPlugin = require('threads-plugin')
 
 module.exports = {
   entry: {
-    demo: './src/index.ts',
-    library: './src/webTelemedicineLibrary.ts',
+    demo: './src/demo/index.ts',
+    library: './src/index.ts',
   },
   plugins: [new ThreadsPlugin()],
   module: {
@@ -26,6 +26,6 @@ module.exports = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'public'),
+    path: path.resolve(__dirname, 'public/library'),
   },
 }

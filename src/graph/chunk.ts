@@ -13,11 +13,11 @@ export class Chunk {
   // Max points allowed in a chunk
   static maxPoints = 1000
 
-  id: number
-  lastValue: number
-  firstValue: number
+  public id: number
+  public firstValue: number
+  public lastValue: number
 
-  line: LineSegments
+  public line: LineSegments
 
   constructor(id: number, firstValue: number = undefined, lastValue: number = undefined) {
     this.id = id

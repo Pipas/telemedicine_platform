@@ -1,4 +1,4 @@
 node_modules/
-public/bundle.js
-public/*.bundle.js
-public/*.bundle.worker.js
+bundle.js
+*.bundle.js
+*.bundle.worker.js

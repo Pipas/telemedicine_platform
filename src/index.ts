@@ -1,24 +1,12 @@
-import { GraphManager } from './graphManager'
-import { Vector2 } from 'three'
-import * as Stats from 'stats.js'
-import { DemoWebsocketManager } from './demoWebsocketManager'
-
+import { GraphManager } from './graph/graphManager'
+import { WebsocketManager } from './websocketManager'
 import * as localforage from 'localforage'
-import { GeneratorManager } from './generator/generatorManager'
-import { TimedValues } from './models/timedValues'
+import { TimedValues } from './graph/timedValues'
 
 let graphManager: GraphManager
-let generator: GeneratorManager
-
-let stats: Stats
 
 let pointBuffer: TimedValues[] = []
 let previousRender: number
-
-const generatorCallback = (points: Vector2[]): void => graphManager.addPoints(points)
-const webSocketCallback = (points: TimedValues[]): void => {
-  pointBuffer = [...pointBuffer, ...points]
-}
 
 function render(timestamp: number): void {
   if (previousRender == null) {
@@ -26,8 +14,6 @@ function render(timestamp: number): void {
     requestAnimationFrame(render)
     return
   }
-
-  stats.begin()
 
   const renderTime = timestamp - previousRender
   const points = []
@@ -42,23 +28,19 @@ function render(timestamp: number): void {
   }
 
   graphManager.render()
-  stats.end()
   previousRender = timestamp
   requestAnimationFrame(render)
 }
 
-function initStats(): void {
-  stats = new Stats()
-  stats.showPanel(0)
-  document.body.appendChild(stats.dom)
-}
-
 function initWebSocket(): void {
-  new DemoWebsocketManager(graphManager, webSocketCallback, () => {
-    console.log('error')
-    generator = new GeneratorManager(generatorCallback, graphManager)
-    generator.start()
-  })
+  new WebsocketManager(
+    (points: TimedValues[]): void => {
+      pointBuffer = [...pointBuffer, ...points]
+    },
+    () => {
+      console.log('Error while loading connection')
+    },
+  )
 }
 
 window.onload = function(): void {
@@ -67,7 +49,5 @@ window.onload = function(): void {
   graphManager = new GraphManager()
 
   initWebSocket()
-
-  initStats()
   requestAnimationFrame(render)
 }

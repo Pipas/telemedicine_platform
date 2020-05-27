@@ -1,6 +1,6 @@
 import { WebGLRenderer, Vector2 } from 'three'
-import { Graph } from './graph/graph'
-import { TimedValues } from './models/timedValues'
+import { Graph } from './graph'
+import { TimedValues } from './timedValues'
 
 /**
  * Manages all the graphs in the page

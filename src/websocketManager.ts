@@ -1,5 +1,5 @@
 import * as toBuffer from 'blob-to-buffer'
-import { TimedValues } from './models/timedValues'
+import { TimedValues } from './graph/timedValues'
 import { spawn, Worker, Transfer, TransferDescriptor } from 'threads'
 
 type readData = (buffer: TransferDescriptor<ArrayBuffer>) => Promise<TimedValues[]>

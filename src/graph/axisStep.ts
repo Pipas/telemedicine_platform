@@ -9,7 +9,7 @@ import {
   Group,
   TextureLoader,
 } from 'three'
-import { Graph } from '../graph/graph'
+import { Graph } from './graph'
 
 export enum StepDirection {
   vertical,

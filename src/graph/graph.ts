@@ -1,7 +1,7 @@
 import { Scene, Group, Box3, Vector2, Color, PerspectiveCamera, WebGLRenderer } from 'three'
 import { XAxis } from './xAxis'
 import { YAxis } from './yAxis'
-import { VisibleRange } from '../models/visibleRange'
+import { VisibleRange } from './visibleRange'
 import { ChunkManager } from './chunkManager'
 import { GraphControls } from './graphControls'
 import { DragHandler } from './dragHandler'
@@ -20,11 +20,11 @@ export class Graph {
 
   // Graph IDs
   private static _id = 0
-  id: number
+  public id: number
 
   // Graph elements
-  scene: Scene
-  element: HTMLDivElement
+  public scene: Scene
+  public element: HTMLDivElement
   private camera: PerspectiveCamera
   private controls: GraphControls
   private dragHandler: DragHandler
@@ -34,14 +34,14 @@ export class Graph {
   private autoUpdateVerticalRange = true
 
   // Graph range and zoom
-  visibleRange: VisibleRange
-  xZoom = 10
-  yZoom = 1
+  public visibleRange: VisibleRange
+  public xZoom = 10
+  public yZoom = 1
 
   // Rendered objects
   private xAxis: XAxis
   private yAxis: YAxis
-  plotLine: Group
+  public plotLine: Group
 
   // Data structures
   private chunkManager: ChunkManager

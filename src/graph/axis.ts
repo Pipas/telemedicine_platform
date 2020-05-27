@@ -1,6 +1,6 @@
 import { LineBasicMaterial, Line } from 'three'
 import { Graph } from '../graph/graph'
-import { AxisStep } from '../models/axisStep'
+import { AxisStep } from './axisStep'
 
 /**
  * Representation of an Axis in the graph

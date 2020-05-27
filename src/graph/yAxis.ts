@@ -1,5 +1,5 @@
 import { Graph } from '../graph/graph'
-import { AxisStep, StepDirection } from '../models/axisStep'
+import { AxisStep, StepDirection } from './axisStep'
 import { Axis } from './axis'
 
 /**

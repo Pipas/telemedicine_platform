@@ -1,4 +1,4 @@
-import { Chunk } from '../models/chunk'
+import { Chunk } from './chunk'
 import { Vector2 } from 'three'
 import { Graph } from './graph'
 import { Buffer } from 'buffer/'
@@ -15,7 +15,7 @@ export class ChunkManager {
   // Number of chunks it should have loaded out of view on each side of the graph
   private static chunkPadding = 3
 
-  graph: Graph
+  public graph: Graph
 
   // Visible and loaded chunk arrays
   private visibleChunks: Chunk[]
@@ -26,7 +26,7 @@ export class ChunkManager {
   private localChunkHandler: LocalChunkHandler
 
   // Last point added to the graph
-  lastPoint: Vector2
+  public lastPoint: Vector2
 
   // Chunk where new values added
   private updatingChunk: Chunk

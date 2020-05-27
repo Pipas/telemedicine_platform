@@ -1,7 +1,7 @@
 import * as dat from 'dat.gui'
 import * as toBuffer from 'blob-to-buffer'
-import { GraphManager } from './graphManager'
-import { TimedValues } from './models/timedValues'
+import { GraphManager } from '../graph/graphManager'
+import { TimedValues } from '../graph/timedValues'
 import { spawn, Worker, Transfer, TransferDescriptor } from 'threads'
 
 type readData = (buffer: TransferDescriptor<ArrayBuffer>) => Promise<TimedValues[]>
@@ -54,7 +54,7 @@ export class DemoWebsocketManager {
   }
 
   private async startConnections(): Promise<void> {
-    this.readData = await spawn<readData>(new Worker('./workers/readData'))
+    this.readData = await spawn<readData>(new Worker('../workers/readData'))
     this.connection = new WebSocket(this.websocketLocation)
 
     this.connection.addEventListener('open', () => {

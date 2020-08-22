@@ -95,7 +95,7 @@ export class AxisStep {
 
       AxisStep.digits = new Map<string, Sprite>()
       AxisStep.digitWidth = 11 / 16 // From the sprite sizes
-      AxisStep.digitScale = 256 / this.graph.element.offsetHeight
+      AxisStep.digitScale = 1 //256 / this.graph.element.offsetHeight < only works if graph is showing at the start
 
       for (let i = 0; i < digits.length; i++) {
         const texture = new TextureLoader().load('images/digits.png')

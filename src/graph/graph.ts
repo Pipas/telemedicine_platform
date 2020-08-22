@@ -79,7 +79,8 @@ export class Graph {
       rect.bottom < 0 ||
       rect.top > renderer.domElement.clientHeight ||
       rect.right < 0 ||
-      rect.left > renderer.domElement.clientWidth
+      rect.left > renderer.domElement.clientWidth ||
+      this.element.offsetParent === null
     )
       return
 
@@ -176,7 +177,7 @@ export class Graph {
    */
   private initCamera(): void {
     // Initialize camera object
-    const aspectRatio = this.element.offsetWidth / this.element.offsetHeight
+    const aspectRatio = this.element.offsetHeight != 0 ? this.element.offsetWidth / this.element.offsetHeight : 1
     const fieldOfView = 90
     const nearPlane = 1
     const farPlane = 1000

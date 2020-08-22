@@ -26,6 +26,6 @@ module.exports = {
   },
   output: {
     filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'public/library'),
+    path: path.resolve(__dirname, 'public/final_website/library'),
   },
 }

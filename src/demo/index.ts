@@ -56,9 +56,13 @@ function initStats(): void {
 function initWebSocket(): void {
   new DemoWebsocketManager(graphManager, webSocketCallback, () => {
     console.log('error')
-    generator = new GeneratorManager(generatorCallback, graphManager)
-    generator.start()
+    initGenerator()
   })
+}
+
+function initGenerator(): void {
+  generator = new GeneratorManager(generatorCallback, graphManager)
+  generator.start()
 }
 
 window.onload = function(): void {
@@ -66,7 +70,8 @@ window.onload = function(): void {
   sessionStorage.clear()
   graphManager = new GraphManager()
 
-  initWebSocket()
+  //initWebSocket()
+  initGenerator()
 
   initStats()
   requestAnimationFrame(render)

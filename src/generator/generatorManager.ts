@@ -32,7 +32,7 @@ export class GeneratorManager {
     this.folders = []
     this.gui = new dat.GUI()
     this.gui.addFolder('Generating Values')
-    this.gui.add(this, 'frequency', 1, 1000).onChange(() => this.start())
+    // this.gui.add(this, 'frequency', 1, 1000).onChange(() => this.start())
     this.gui.add(this, 'toggle')
     this.gui.add(this, 'addGraph')
     this.gui.add(this, 'removeGraph')

@@ -6,7 +6,7 @@
   "scripts": {
     "build": "webpack --config webpack.prod.js",
     "start": "webpack-dev-server --config webpack.dev.js --open",
-    "pages": "gh-pages -d public/demo", 
+    "pages": "gh-pages -d public/demo",
     "deploy": "run-s build pages",
     "lint": "tsc --noEmit && eslint 'src/**/*.{js,ts,tsx}' --quiet --fix"
   },
